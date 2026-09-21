@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Visitor Pass {{ visitor.pass_code }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <h1 class="h3 mb-3">Visitor Pass</h1>
+
+        <div class="card">
+            <div class="card-body text-center py-4">
+                <div class="text-muted small">Pass code</div>
+                <div class="display-6 fw-semibold my-2">{{ visitor.pass_code }}</div>
+                {% if visitor.status == "EXPECTED" %}
+                    <span class="badge text-bg-info">{{ visitor.get_status_display }}</span>
+                {% elif visitor.status == "CHECKED_IN" %}
+                    <span class="badge text-bg-success">{{ visitor.get_status_display }}</span>
+                {% elif visitor.status == "CHECKED_OUT" %}
+                    <span class="badge text-bg-secondary">{{ visitor.get_status_display }}</span>
+                {% elif visitor.status == "CANCELLED" %}
+                    <span class="badge text-bg-danger">{{ visitor.get_status_display }}</span>
+                {% else %}
+                    <span class="badge text-bg-warning">{{ visitor.get_status_display }}</span>
+                {% endif %}
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between">
+                    <span class="text-muted">Visitor</span>
+                    <span class="fw-semibold">{{ visitor.full_name }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span class="text-muted">Phone</span>
+                    <span>{{ visitor.phone }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span class="text-muted">Visiting</span>
+                    <span>{{ visitor.resident.full_name }} ({{ visitor.flat }})</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span class="text-muted">Vehicle</span>
+                    <span>{{ visitor.vehicle_number|default:"On foot" }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span class="text-muted">Expected date</span>
+                    <span>{{ visitor.expected_date|date:"d M Y" }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span class="text-muted">Entry time</span>
+                    <span>{{ visitor.entry_time|date:"d M Y, H:i"|default:"-" }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span class="text-muted">Exit time</span>
+                    <span>{{ visitor.exit_time|date:"d M Y, H:i"|default:"-" }}</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="mt-3 d-flex flex-wrap gap-2">
+            <a href="{% url 'visitors:visitor_create' %}" class="btn btn-outline-primary">Pre-register another visitor</a>
+            <a href="{% url 'dashboard:home' %}" class="btn btn-outline-secondary">Home</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
