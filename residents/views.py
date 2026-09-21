@@ -1,6 +1,8 @@
+from django.contrib import messages
 from django.db.models import Q
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 
+from .forms import ResidentForm
 from .models import Resident
 
 
@@ -30,3 +32,18 @@ def resident_list(request):
 
     context = {"residents": residents, "query": query}
     return render(request, "residents/resident_list.html", context)
+
+
+def resident_create(request):
+    """Show an empty form (GET), or validate and save a new resident (POST)."""
+    if request.method == "POST":
+        form = ResidentForm(request.POST)
+        if form.is_valid():
+            resident = form.save()
+            messages.success(request, f"Resident {resident.full_name} was added.")
+            return redirect("residents:resident_list")
+    else:
+        form = ResidentForm()
+
+    context = {"form": form, "page_title": "Add Resident", "submit_label": "Add Resident"}
+    return render(request, "residents/resident_form.html", context)
