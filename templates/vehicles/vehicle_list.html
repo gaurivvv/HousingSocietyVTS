@@ -47,6 +47,7 @@
                         <th>Owner</th>
                         <th>Flat</th>
                         <th>Status</th>
+                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -64,6 +65,10 @@
                                 {% else %}
                                     <span class="badge text-bg-secondary">Inactive</span>
                                 {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{% url 'vehicles:vehicle_update' vehicle.pk %}"
+                                   class="btn btn-sm btn-outline-primary">Edit</a>
                             </td>
                         </tr>
                     {% endfor %}

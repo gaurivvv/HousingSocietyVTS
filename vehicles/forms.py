@@ -1,4 +1,5 @@
 from django import forms
+from django.db.models import Q
 
 from residents.models import Resident
 
@@ -26,11 +27,16 @@ class VehicleForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Only active residents can be chosen as owners
-        self.fields["resident"].queryset = (
-            Resident.objects.filter(is_active=True)
-            .select_related("flat__wing")
-            .order_by("flat__wing__name", "flat__flat_number", "full_name")
+
+        # New vehicles: only active residents can be chosen as owners.
+        # Editing: also keep the vehicle's current owner in the list,
+        # even if that resident has since been deactivated.
+        owners = Resident.objects.filter(is_active=True)
+        if self.instance.pk:
+            owners = Resident.objects.filter(Q(is_active=True) | Q(pk=self.instance.resident_id))
+
+        self.fields["resident"].queryset = owners.select_related("flat__wing").order_by(
+            "flat__wing__name", "flat__flat_number", "full_name"
         )
         self.fields["resident"].empty_label = "Select the owner"
 

@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.db.models import Q
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import VehicleForm
 from .models import Vehicle
@@ -62,4 +62,26 @@ def vehicle_create(request):
         form = VehicleForm()
 
     context = {"form": form, "page_title": "Add Vehicle", "submit_label": "Register Vehicle"}
+    return render(request, "vehicles/vehicle_form.html", context)
+
+
+def vehicle_update(request, pk):
+    """Show the form filled with a vehicle's details (GET), or save changes (POST)."""
+    vehicle = get_object_or_404(Vehicle, pk=pk)
+
+    if request.method == "POST":
+        form = VehicleForm(request.POST, instance=vehicle)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Vehicle {vehicle.vehicle_number} was updated.")
+            return redirect("vehicles:vehicle_list")
+    else:
+        form = VehicleForm(instance=vehicle)
+
+    context = {
+        "form": form,
+        "vehicle": vehicle,
+        "page_title": "Edit Vehicle",
+        "submit_label": "Save Changes",
+    }
     return render(request, "vehicles/vehicle_form.html", context)
