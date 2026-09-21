@@ -21,8 +21,12 @@
             <div class="collapse navbar-collapse" id="mainNavbar">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
+                        <a class="nav-link {% if request.resolver_match.app_name == 'dashboard' %}active{% endif %}"
                            href="{% url 'dashboard:home' %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.app_name == 'residents' %}active{% endif %}"
+                           href="{% url 'residents:resident_list' %}">Residents</a>
                     </li>
                 </ul>
                 <ul class="navbar-nav">
