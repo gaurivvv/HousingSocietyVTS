@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "residents",
     "vehicles",
     "dashboard",
+    "tracking",
 ]
 
 MIDDLEWARE = [
