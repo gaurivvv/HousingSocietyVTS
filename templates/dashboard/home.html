@@ -41,12 +41,13 @@
 </div>
 
 <div class="card">
-    <div class="card-body">
-        <p class="mb-2">
-            Resident and Vehicle management pages are being built next.
-            Until then, records can be managed in Django Admin.
-        </p>
-        <a href="{% url 'admin:index' %}" class="btn btn-outline-primary btn-sm">Open Django Admin</a>
+    <div class="card-header bg-white fw-semibold">Quick Links</div>
+    <div class="list-group list-group-flush">
+        <a href="{% url 'residents:resident_list' %}" class="list-group-item list-group-item-action">View residents</a>
+        <a href="{% url 'residents:resident_create' %}" class="list-group-item list-group-item-action">Add a resident</a>
+        <a href="{% url 'vehicles:vehicle_list' %}" class="list-group-item list-group-item-action">View vehicles</a>
+        <a href="{% url 'vehicles:vehicle_create' %}" class="list-group-item list-group-item-action">Register a vehicle</a>
+        <a href="{% url 'admin:index' %}" class="list-group-item list-group-item-action">Django Admin (wings and flats)</a>
     </div>
 </div>
 {% endblock %}

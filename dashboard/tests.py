@@ -1,4 +1,4 @@
-﻿from django.test import TestCase
+from django.test import TestCase
 from django.urls import reverse
 
 from residents.models import Resident
@@ -30,3 +30,14 @@ class HomePageTests(TestCase):
         self.assertEqual(response.context["flat_count"], 1)
         self.assertEqual(response.context["active_resident_count"], 1)
         self.assertEqual(response.context["active_vehicle_count"], 1)
+
+    def test_home_page_has_quick_links_to_management_pages(self):
+        response = self.client.get(reverse("dashboard:home"))
+        for url_name in [
+            "residents:resident_list",
+            "residents:resident_create",
+            "vehicles:vehicle_list",
+            "vehicles:vehicle_create",
+        ]:
+            self.assertContains(response, reverse(url_name))
+        self.assertNotContains(response, "being built next")
