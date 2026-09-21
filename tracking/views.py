@@ -1,7 +1,10 @@
 from django.contrib import messages
+from django.core.paginator import Paginator
 from django.shortcuts import redirect, render
 
-from .forms import GateEntryForm
+from vehicles.utils import normalize_plate
+
+from .forms import GateEntryForm, HistoryFilterForm
 from .models import VehicleLog
 from .utils import todays_counts, vehicles_inside
 
@@ -37,3 +40,41 @@ def gate(request):
         "today": todays_counts(),
     }
     return render(request, "tracking/gate.html", context)
+
+
+def gate_history(request):
+    """All gate movements, newest first, with optional filters and pages of 25."""
+    # Bound only when the address has filter values, e.g. /gate/history/?plate=mh12
+    filter_form = HistoryFilterForm(request.GET or None)
+
+    logs = VehicleLog.objects.select_related("vehicle__resident__flat__wing")
+
+    if filter_form.is_valid():
+        data = filter_form.cleaned_data
+
+        plate = normalize_plate(data["plate"])
+        if plate:
+            logs = logs.filter(plate_number__icontains=plate)
+        if data["date_from"]:
+            logs = logs.filter(timestamp__date__gte=data["date_from"])
+        if data["date_to"]:
+            logs = logs.filter(timestamp__date__lte=data["date_to"])
+        if data["movement_type"]:
+            logs = logs.filter(movement_type=data["movement_type"])
+        if data["category"]:
+            logs = logs.filter(category=data["category"])
+
+    paginator = Paginator(logs, 25)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
+    # Keep the filters in the address when moving between pages
+    params = request.GET.copy()
+    params.pop("page", None)
+
+    context = {
+        "filter_form": filter_form,
+        "page_obj": page_obj,
+        "total_count": paginator.count,
+        "query_string": params.urlencode(),
+    }
+    return render(request, "tracking/history.html", context)

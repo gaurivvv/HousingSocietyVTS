@@ -6,4 +6,5 @@ app_name = "tracking"
 
 urlpatterns = [
     path("", views.gate, name="gate"),
+    path("history/", views.gate_history, name="history"),
 ]

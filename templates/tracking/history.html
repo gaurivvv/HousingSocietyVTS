@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Gate History{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="h3 mb-0">Gate History</h1>
+    <a href="{% url 'tracking:gate' %}" class="btn btn-outline-secondary btn-sm">Back to Gate</a>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end" novalidate>
+            {% for field in filter_form %}
+                <div class="col-sm-6 col-lg">
+                    <label for="{{ field.id_for_label }}" class="form-label small text-muted mb-1">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            <div class="col-sm-6 col-lg-auto d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Filter</button>
+                <a href="{% url 'tracking:history' %}" class="btn btn-outline-secondary">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <span class="fw-semibold">Gate movements</span>
+        <span class="text-muted small">{{ total_count }} found</span>
+    </div>
+
+    {% if page_obj.object_list %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date and time</th>
+                        <th>Vehicle No.</th>
+                        <th>Movement</th>
+                        <th>Category</th>
+                        <th>Owner</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in page_obj %}
+                        <tr>
+                            <td class="text-nowrap">{{ log.timestamp|date:"d M Y, H:i" }}</td>
+                            <td class="fw-semibold">{{ log.plate_number }}</td>
+                            <td>
+                                {% if log.movement_type == "ENTRY" %}
+                                    <span class="badge text-bg-primary">Entry</span>
+                                {% else %}
+                                    <span class="badge text-bg-secondary">Exit</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if log.category == "REGISTERED" %}
+                                    <span class="badge text-bg-success">Registered</span>
+                                {% elif log.category == "VISITOR" %}
+                                    <span class="badge text-bg-info">Visitor</span>
+                                {% else %}
+                                    <span class="badge text-bg-warning">Unknown</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if log.vehicle %}
+                                    {{ log.vehicle.resident.full_name }}
+                                    <span class="text-muted small">({{ log.vehicle.resident.flat }})</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ log.remarks|default:"-" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="card-body text-muted">No gate movements match these filters.</div>
+    {% endif %}
+
+    {% if page_obj.has_other_pages %}
+        <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+            <span class="small text-muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            <ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">Previous</span></li>
+                {% endif %}
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">Next</span></li>
+                {% endif %}
+            </ul>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
