@@ -1,6 +1,8 @@
+from django.contrib import messages
 from django.db.models import Q
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 
+from .forms import VehicleForm
 from .models import Vehicle
 from .utils import normalize_plate
 
@@ -43,3 +45,21 @@ def vehicle_list(request):
         "vehicle_types": Vehicle.VehicleType.choices,
     }
     return render(request, "vehicles/vehicle_list.html", context)
+
+
+def vehicle_create(request):
+    """Show an empty form (GET), or validate and register a new vehicle (POST)."""
+    if request.method == "POST":
+        form = VehicleForm(request.POST)
+        if form.is_valid():
+            vehicle = form.save()
+            messages.success(
+                request,
+                f"Vehicle {vehicle.vehicle_number} was registered to {vehicle.resident.full_name}.",
+            )
+            return redirect("vehicles:vehicle_list")
+    else:
+        form = VehicleForm()
+
+    context = {"form": form, "page_title": "Add Vehicle", "submit_label": "Register Vehicle"}
+    return render(request, "vehicles/vehicle_form.html", context)

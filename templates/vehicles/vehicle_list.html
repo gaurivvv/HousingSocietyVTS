@@ -3,7 +3,10 @@
 {% block title %}Vehicles{% endblock %}
 
 {% block content %}
-<h1 class="h3 mb-3">Vehicles</h1>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="h3 mb-0">Vehicles</h1>
+    <a href="{% url 'vehicles:vehicle_create' %}" class="btn btn-primary">Add Vehicle</a>
+</div>
 
 <form method="get" class="row g-2 mb-3">
     <div class="col-md-5">
