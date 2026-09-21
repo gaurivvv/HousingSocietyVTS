@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.db.models import Q
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import ResidentForm
 from .models import Resident
@@ -46,4 +46,26 @@ def resident_create(request):
         form = ResidentForm()
 
     context = {"form": form, "page_title": "Add Resident", "submit_label": "Add Resident"}
+    return render(request, "residents/resident_form.html", context)
+
+
+def resident_update(request, pk):
+    """Show the form filled with a resident's details (GET), or save changes (POST)."""
+    resident = get_object_or_404(Resident, pk=pk)
+
+    if request.method == "POST":
+        form = ResidentForm(request.POST, instance=resident)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Resident {resident.full_name} was updated.")
+            return redirect("residents:resident_list")
+    else:
+        form = ResidentForm(instance=resident)
+
+    context = {
+        "form": form,
+        "resident": resident,
+        "page_title": "Edit Resident",
+        "submit_label": "Save Changes",
+    }
     return render(request, "residents/resident_form.html", context)
