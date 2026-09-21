@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-4">Society Overview</h1>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="text-muted small">Wings</div>
+                <div class="stat-value">{{ wing_count }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="text-muted small">Flats</div>
+                <div class="stat-value">{{ flat_count }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="text-muted small">Active Residents</div>
+                <div class="stat-value">{{ active_resident_count }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="text-muted small">Active Vehicles</div>
+                <div class="stat-value">{{ active_vehicle_count }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <p class="mb-2">
+            Resident and Vehicle management pages are being built next.
+            Until then, records can be managed in Django Admin.
+        </p>
+        <a href="{% url 'admin:index' %}" class="btn btn-outline-primary btn-sm">Open Django Admin</a>
+    </div>
+</div>
+{% endblock %}

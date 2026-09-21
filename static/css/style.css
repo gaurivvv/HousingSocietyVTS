@@ -1,0 +1,13 @@
+body {
+    background-color: #f5f6f8;
+}
+
+.card {
+    border-color: #e3e6ea;
+}
+
+.stat-card .stat-value {
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
