@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Visitors{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="h3 mb-0">Visitors</h1>
+    <a href="{% url 'visitors:visitor_create' %}" class="btn btn-primary">Pre-register a Visitor</a>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end" novalidate>
+            {% for field in filter_form %}
+                <div class="col-md">
+                    <label for="{{ field.id_for_label }}" class="form-label small text-muted mb-1">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                    {% if field.help_text %}
+                        <div class="form-text">{{ field.help_text }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <div class="col-md-auto d-flex gap-2">
+                <button type="submit" class="btn btn-outline-primary">Filter</button>
+                <a href="{% url 'visitors:visitor_list' %}" class="btn btn-outline-secondary">Today</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <span class="fw-semibold">Visitor records</span>
+        <span class="text-muted small">{{ total_count }} found</span>
+    </div>
+
+    {% if page_obj.object_list %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Pass code</th>
+                        <th>Visitor</th>
+                        <th>Visiting</th>
+                        <th>Vehicle</th>
+                        <th>Expected</th>
+                        <th>Status</th>
+                        <th>Entry</th>
+                        <th>Exit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for visitor in page_obj %}
+                        <tr>
+                            <td class="text-nowrap">
+                                <a href="{% url 'visitors:visitor_detail' visitor.pk %}" class="fw-semibold">{{ visitor.pass_code }}</a>
+                            </td>
+                            <td>
+                                {{ visitor.full_name }}
+                                <div class="small text-muted">{{ visitor.phone }}</div>
+                            </td>
+                            <td>{{ visitor.resident.full_name }} <span class="text-muted small">({{ visitor.flat }})</span></td>
+                            <td>{{ visitor.vehicle_number|default:"On foot" }}</td>
+                            <td class="text-nowrap">{{ visitor.expected_date|date:"d M Y" }}</td>
+                            <td>
+                                {% if visitor.status == "EXPECTED" %}
+                                    <span class="badge text-bg-info">{{ visitor.get_status_display }}</span>
+                                {% elif visitor.status == "CHECKED_IN" %}
+                                    <span class="badge text-bg-success">{{ visitor.get_status_display }}</span>
+                                {% elif visitor.status == "CHECKED_OUT" %}
+                                    <span class="badge text-bg-secondary">{{ visitor.get_status_display }}</span>
+                                {% elif visitor.status == "CANCELLED" %}
+                                    <span class="badge text-bg-danger">{{ visitor.get_status_display }}</span>
+                                {% else %}
+                                    <span class="badge text-bg-warning">{{ visitor.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-nowrap">{{ visitor.entry_time|date:"H:i"|default:"-" }}</td>
+                            <td class="text-nowrap">{{ visitor.exit_time|date:"H:i"|default:"-" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="card-body text-muted">No visitors found for these filters.</div>
+    {% endif %}
+
+    {% if page_obj.has_other_pages %}
+        <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+            <span class="small text-muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            <ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{{ query_string }}&amp;page={{ page_obj.previous_page_number }}">Previous</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">Previous</span></li>
+                {% endif %}
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{{ query_string }}&amp;page={{ page_obj.next_page_number }}">Next</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">Next</span></li>
+                {% endif %}
+            </ul>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

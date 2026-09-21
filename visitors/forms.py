@@ -19,6 +19,15 @@ def clean_indian_mobile(value):
     return phone
 
 
+def apply_bootstrap(form):
+    """Give every field in a form the right Bootstrap class."""
+    for field in form.fields.values():
+        if isinstance(field.widget, forms.Select):
+            field.widget.attrs["class"] = "form-select"
+        else:
+            field.widget.attrs["class"] = "form-control"
+
+
 class VisitorForm(forms.ModelForm):
     phone = forms.CharField(
         label="Mobile number",
@@ -53,13 +62,7 @@ class VisitorForm(forms.ModelForm):
             .order_by("flat__wing__name", "flat__flat_number", "full_name")
         )
         self.fields["resident"].empty_label = "Select the resident being visited"
-
-        # Bootstrap styling for every field
-        for field in self.fields.values():
-            if isinstance(field.widget, forms.Select):
-                field.widget.attrs["class"] = "form-select"
-            else:
-                field.widget.attrs["class"] = "form-control"
+        apply_bootstrap(self)
 
     def clean_full_name(self):
         full_name = " ".join(self.cleaned_data["full_name"].split())
@@ -91,3 +94,28 @@ class VisitorForm(forms.ModelForm):
             if field_name in self.fields:
                 widget = self.fields[field_name].widget
                 widget.attrs["class"] = widget.attrs.get("class", "") + " is-invalid"
+
+
+class VisitorFilterForm(forms.Form):
+    """Filters for the Visitors list. Every field is optional."""
+
+    q = forms.CharField(
+        required=False,
+        label="Search",
+        widget=forms.TextInput(attrs={"placeholder": "Name, phone, pass code, vehicle or flat (A-101)"}),
+    )
+    date = forms.DateField(
+        required=False,
+        label="Expected date",
+        help_text="Clear the date to see all dates.",
+        widget=forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"}),
+    )
+    status = forms.ChoiceField(
+        required=False,
+        label="Status",
+        choices=[("", "All")] + list(Visitor.Status.choices),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        apply_bootstrap(self)
