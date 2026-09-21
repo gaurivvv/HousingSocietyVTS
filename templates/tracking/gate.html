@@ -63,7 +63,10 @@
 
     <div class="col-lg-8">
         <div class="card">
-            <div class="card-header bg-white fw-semibold">Recent movements</div>
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <span class="fw-semibold">Recent movements</span>
+                <a href="{% url 'tracking:history' %}" class="small">View full history</a>
+            </div>
             {% if recent_logs %}
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">

@@ -21,20 +21,19 @@
             <div class="collapse navbar-collapse" id="mainNavbar">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.app_name == 'dashboard' %}active{% endif %}"
-                           href="{% url 'dashboard:home' %}">Home</a>
+                        <a class="nav-link {% if request.resolver_match.app_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard:home' %}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.app_name == 'residents' %}active{% endif %}"
-                           href="{% url 'residents:resident_list' %}">Residents</a>
+                        <a class="nav-link {% if request.resolver_match.app_name == 'residents' %}active{% endif %}" href="{% url 'residents:resident_list' %}">Residents</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.app_name == 'vehicles' %}active{% endif %}"
-                           href="{% url 'vehicles:vehicle_list' %}">Vehicles</a>
+                        <a class="nav-link {% if request.resolver_match.app_name == 'vehicles' %}active{% endif %}" href="{% url 'vehicles:vehicle_list' %}">Vehicles</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.app_name == 'tracking' %}active{% endif %}"
-                           href="{% url 'tracking:gate' %}">Gate</a>
+                        <a class="nav-link {% if request.resolver_match.view_name == 'tracking:gate' %}active{% endif %}" href="{% url 'tracking:gate' %}">Gate</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.view_name == 'tracking:history' %}active{% endif %}" href="{% url 'tracking:history' %}">Gate History</a>
                     </li>
                 </ul>
                 <ul class="navbar-nav">
