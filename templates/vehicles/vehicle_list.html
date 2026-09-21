@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Vehicles{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">Vehicles</h1>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-5">
+        <input type="text" name="q" value="{{ query }}" class="form-control"
+               placeholder="Plate, model, colour, owner name, phone or flat (A-101)">
+    </div>
+    <div class="col-md-3">
+        <select name="type" class="form-select">
+            <option value="">All types</option>
+            {% for value, label in vehicle_types %}
+                <option value="{{ value }}" {% if value == vehicle_type %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-primary">Search</button>
+        {% if query or vehicle_type %}
+            <a href="{% url 'vehicles:vehicle_list' %}" class="btn btn-outline-secondary">Clear</a>
+        {% endif %}
+    </div>
+</form>
+
+<div class="card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <span class="fw-semibold">Registered Vehicles</span>
+        <span class="text-muted small">{{ vehicles|length }} found</span>
+    </div>
+
+    {% if vehicles %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Vehicle No.</th>
+                        <th>Type</th>
+                        <th>Model</th>
+                        <th>Colour</th>
+                        <th>Owner</th>
+                        <th>Flat</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vehicle in vehicles %}
+                        <tr>
+                            <td class="fw-semibold">{{ vehicle.vehicle_number }}</td>
+                            <td>{{ vehicle.get_vehicle_type_display }}</td>
+                            <td>{{ vehicle.model_name|default:"-" }}</td>
+                            <td>{{ vehicle.colour|default:"-" }}</td>
+                            <td>{{ vehicle.resident.full_name }}</td>
+                            <td>{{ vehicle.resident.flat }}</td>
+                            <td>
+                                {% if vehicle.is_active %}
+                                    <span class="badge text-bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge text-bg-secondary">Inactive</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="card-body text-muted">
+            {% if query or vehicle_type %}
+                No vehicles found for this search.
+            {% else %}
+                No vehicles have been registered yet.
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
