@@ -5,6 +5,33 @@
 {% block content %}
 <h1 class="h3 mb-3">Gate</h1>
 
+<div class="row g-3 mb-3">
+    <div class="col-sm-4">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="text-muted small">Inside now</div>
+                <div class="stat-value">{{ inside_logs|length }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="text-muted small">Entries today</div>
+                <div class="stat-value">{{ today.entries }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="text-muted small">Exits today</div>
+                <div class="stat-value">{{ today.exits }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row g-3">
     <div class="col-lg-4">
         <div class="card">
@@ -90,5 +117,42 @@
             {% endif %}
         </div>
     </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-header bg-white fw-semibold">Vehicles inside now</div>
+    {% if inside_logs %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Vehicle No.</th>
+                        <th>Category</th>
+                        <th>Owner</th>
+                        <th>Entered at</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in inside_logs %}
+                        <tr>
+                            <td class="fw-semibold">{{ log.plate_number }}</td>
+                            <td>{{ log.get_category_display }}</td>
+                            <td>
+                                {% if log.vehicle %}
+                                    {{ log.vehicle.resident.full_name }}
+                                    <span class="text-muted small">({{ log.vehicle.resident.flat }})</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-nowrap">{{ log.timestamp|date:"d M Y, H:i" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="card-body text-muted">No vehicles are inside right now.</div>
+    {% endif %}
 </div>
 {% endblock %}
