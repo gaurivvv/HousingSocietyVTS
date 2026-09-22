@@ -1,0 +1,9 @@
+{% if log.vehicle %}
+    {{ log.vehicle.resident.full_name }}
+    <span class="text-muted small">({{ log.vehicle.resident.flat }})</span>
+{% elif log.visitor %}
+    {{ log.visitor.full_name }}
+    <div class="text-muted small">visiting {{ log.visitor.resident.full_name }} ({{ log.visitor.flat }})</div>
+{% else %}
+    <span class="text-muted">-</span>
+{% endif %}

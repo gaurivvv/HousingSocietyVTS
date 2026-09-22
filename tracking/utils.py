@@ -19,7 +19,7 @@ def vehicles_inside():
             id=Subquery(latest_log_for_plate),
             movement_type=VehicleLog.MovementType.ENTRY,
         )
-        .select_related("vehicle__resident__flat__wing")
+        .select_related("vehicle__resident__flat__wing", "visitor__resident", "visitor__flat__wing")
         .order_by("-timestamp")
     )
 

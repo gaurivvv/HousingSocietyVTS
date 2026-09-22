@@ -24,6 +24,14 @@ def gate(request):
                     f"{movement} recorded for {log.plate_number}: "
                     f"registered vehicle of {resident.full_name} ({resident.flat}).",
                 )
+            elif log.visitor:
+                # Matched today's pre-registered visitor (the visitor's status is not changed)
+                visitor = log.visitor
+                messages.success(
+                    request,
+                    f"{movement} recorded for {log.plate_number}: "
+                    f"visitor {visitor.full_name}, visiting {visitor.resident.full_name} ({visitor.flat}).",
+                )
             elif log.category == VehicleLog.Category.VISITOR:
                 messages.success(request, f"{movement} recorded for {log.plate_number}: visitor vehicle.")
             else:
@@ -35,7 +43,9 @@ def gate(request):
 
     context = {
         "form": form,
-        "recent_logs": VehicleLog.objects.select_related("vehicle__resident__flat__wing")[:20],
+        "recent_logs": VehicleLog.objects.select_related(
+            "vehicle__resident__flat__wing", "visitor__resident", "visitor__flat__wing"
+        )[:20],
         "inside_logs": list(vehicles_inside()),
         "today": todays_counts(),
     }

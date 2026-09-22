@@ -76,7 +76,7 @@
                                 <th>Vehicle No.</th>
                                 <th>Movement</th>
                                 <th>Category</th>
-                                <th>Owner</th>
+                                <th>Owner / Visitor</th>
                                 <th>Remarks</th>
                             </tr>
                         </thead>
@@ -101,14 +101,7 @@
                                             <span class="badge text-bg-warning">Unknown</span>
                                         {% endif %}
                                     </td>
-                                    <td>
-                                        {% if log.vehicle %}
-                                            {{ log.vehicle.resident.full_name }}
-                                            <span class="text-muted small">({{ log.vehicle.resident.flat }})</span>
-                                        {% else %}
-                                            <span class="text-muted">-</span>
-                                        {% endif %}
-                                    </td>
+                                    <td>{% include "tracking/_owner.html" %}</td>
                                     <td>{{ log.remarks|default:"-" }}</td>
                                 </tr>
                             {% endfor %}
@@ -131,7 +124,7 @@
                     <tr>
                         <th>Vehicle No.</th>
                         <th>Category</th>
-                        <th>Owner</th>
+                        <th>Owner / Visitor</th>
                         <th>Entered at</th>
                     </tr>
                 </thead>
@@ -140,14 +133,7 @@
                         <tr>
                             <td class="fw-semibold">{{ log.plate_number }}</td>
                             <td>{{ log.get_category_display }}</td>
-                            <td>
-                                {% if log.vehicle %}
-                                    {{ log.vehicle.resident.full_name }}
-                                    <span class="text-muted small">({{ log.vehicle.resident.flat }})</span>
-                                {% else %}
-                                    <span class="text-muted">-</span>
-                                {% endif %}
-                            </td>
+                            <td>{% include "tracking/_owner.html" %}</td>
                             <td class="text-nowrap">{{ log.timestamp|date:"d M Y, H:i" }}</td>
                         </tr>
                     {% endfor %}
