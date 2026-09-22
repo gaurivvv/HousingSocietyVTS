@@ -7,20 +7,32 @@ from .models import VehicleLog
 
 @admin.register(VehicleLog)
 class VehicleLogAdmin(admin.ModelAdmin):
-    list_display = ["timestamp", "plate_number", "movement_type", "category", "vehicle", "owner"]
+    list_display = ["timestamp", "plate_number", "movement_type", "category", "vehicle", "visitor", "owner"]
     list_filter = ["movement_type", "category", "timestamp"]
-    search_fields = ["plate_number", "vehicle__resident__full_name", "remarks"]
+    search_fields = [
+        "plate_number",
+        "vehicle__resident__full_name",
+        "visitor__full_name",
+        "visitor__pass_code",
+        "remarks",
+    ]
     date_hierarchy = "timestamp"
-    list_select_related = ["vehicle__resident"]
+    list_select_related = ["vehicle__resident", "visitor__resident", "visitor__flat__wing"]
 
-    # The vehicle is linked automatically from the plate, so it is shown but not edited
-    fields = ["plate_number", "movement_type", "category", "timestamp", "remarks", "vehicle", "created_at"]
-    readonly_fields = ["vehicle", "created_at"]
+    # The vehicle and visitor are linked automatically from the plate, so they are shown but not edited
+    fields = [
+        "plate_number", "movement_type", "category", "timestamp", "remarks",
+        "vehicle", "visitor", "created_at",
+    ]
+    readonly_fields = ["vehicle", "visitor", "created_at"]
 
-    @admin.display(description="Owner")
+    @admin.display(description="Owner / host")
     def owner(self, obj):
+        # Registered vehicle: its owner. Visitor vehicle: the resident being visited.
         if obj.vehicle:
             return obj.vehicle.resident.full_name
+        if obj.visitor:
+            return obj.visitor.resident.full_name
         return "-"
 
     def get_search_results(self, request, queryset, search_term):
