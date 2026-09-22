@@ -55,6 +55,10 @@ class Visitor(models.Model):
             models.Index(fields=["vehicle_number"]),
             models.Index(fields=["expected_date"]),
         ]
+        permissions = [
+            ("check_in_out_visitor", "Can check visitors in and out"),
+            ("cancel_visitor", "Can cancel expected visitors"),
+        ]
 
     def __str__(self):
         return f"{self.full_name} visiting {self.flat} ({self.pass_code})"
