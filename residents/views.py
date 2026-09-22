@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth.decorators import permission_required
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -6,6 +7,7 @@ from .forms import ResidentForm
 from .models import Resident
 
 
+@permission_required("residents.view_resident", raise_exception=True)
 def resident_list(request):
     """List residents, with an optional search."""
     query = request.GET.get("q", "").strip()
@@ -34,6 +36,7 @@ def resident_list(request):
     return render(request, "residents/resident_list.html", context)
 
 
+@permission_required("residents.add_resident", raise_exception=True)
 def resident_create(request):
     """Show an empty form (GET), or validate and save a new resident (POST)."""
     if request.method == "POST":
@@ -49,6 +52,7 @@ def resident_create(request):
     return render(request, "residents/resident_form.html", context)
 
 
+@permission_required("residents.change_resident", raise_exception=True)
 def resident_update(request, pk):
     """Show the form filled with a resident's details (GET), or save changes (POST)."""
     resident = get_object_or_404(Resident, pk=pk)

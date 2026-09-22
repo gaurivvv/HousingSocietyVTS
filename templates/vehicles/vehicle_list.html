@@ -11,7 +11,7 @@
 <form method="get" class="row g-2 mb-3">
     <div class="col-md-5">
         <input type="text" name="q" value="{{ query }}" class="form-control"
-               placeholder="Plate, model, colour, owner name, phone or flat (A-101)">
+               placeholder="Plate, model, colour, owner name{% if can_search_phone %}, phone{% endif %} or flat (A-101)">
     </div>
     <div class="col-md-3">
         <select name="type" class="form-select">

@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth.decorators import permission_required
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -7,10 +8,14 @@ from .models import Vehicle
 from .utils import normalize_plate
 
 
+@permission_required("vehicles.view_vehicle", raise_exception=True)
 def vehicle_list(request):
     """List vehicles, with an optional search and vehicle type filter."""
     query = request.GET.get("q", "").strip()
     vehicle_type = request.GET.get("type", "")
+
+    # Owner phone numbers are resident data: only users who may view residents can search by phone
+    can_search_phone = request.user.has_perm("residents.view_resident")
 
     vehicles = Vehicle.objects.select_related("resident__flat__wing").order_by("vehicle_number")
 
@@ -23,8 +28,9 @@ def vehicle_list(request):
             Q(model_name__icontains=query)
             | Q(colour__icontains=query)
             | Q(resident__full_name__icontains=query)
-            | Q(resident__phone__icontains=query)
         )
+        if can_search_phone:
+            conditions |= Q(resident__phone__icontains=query)
         # Match plates however they are typed: "mh 12-ab" -> "MH12AB"
         normalized = normalize_plate(query)
         if normalized:
@@ -43,10 +49,12 @@ def vehicle_list(request):
         "query": query,
         "vehicle_type": vehicle_type,
         "vehicle_types": Vehicle.VehicleType.choices,
+        "can_search_phone": can_search_phone,
     }
     return render(request, "vehicles/vehicle_list.html", context)
 
 
+@permission_required("vehicles.add_vehicle", raise_exception=True)
 def vehicle_create(request):
     """Show an empty form (GET), or validate and register a new vehicle (POST)."""
     if request.method == "POST":
@@ -65,6 +73,7 @@ def vehicle_create(request):
     return render(request, "vehicles/vehicle_form.html", context)
 
 
+@permission_required("vehicles.change_vehicle", raise_exception=True)
 def vehicle_update(request, pk):
     """Show the form filled with a vehicle's details (GET), or save changes (POST)."""
     vehicle = get_object_or_404(Vehicle, pk=pk)
