@@ -1,8 +1,11 @@
 from django.contrib import messages
+from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_POST
 
 from vehicles.utils import normalize_plate
 
@@ -84,3 +87,41 @@ def visitor_detail(request, pk):
     """The visitor pass: pass code and visit details."""
     visitor = get_object_or_404(Visitor.objects.select_related("flat__wing", "resident"), pk=pk)
     return render(request, "visitors/visitor_detail.html", {"visitor": visitor})
+
+
+# ----- Lifecycle actions: POST only -----
+
+def _redirect_back(request, visitor):
+    """Return to the page the button was on, but only if it is on this site."""
+    next_url = request.POST.get("next", "")
+    if url_has_allowed_host_and_scheme(
+        next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+    ):
+        return redirect(next_url)
+    return redirect("visitors:visitor_detail", pk=visitor.pk)
+
+
+def _run_action(request, pk, action_name, success_message):
+    visitor = get_object_or_404(Visitor, pk=pk)
+    try:
+        getattr(visitor, action_name)()
+    except ValidationError as error:
+        messages.error(request, " ".join(error.messages))
+    else:
+        messages.success(request, success_message.format(name=visitor.full_name, code=visitor.pass_code))
+    return _redirect_back(request, visitor)
+
+
+@require_POST
+def visitor_check_in(request, pk):
+    return _run_action(request, pk, "check_in", "{name} checked in ({code}).")
+
+
+@require_POST
+def visitor_check_out(request, pk):
+    return _run_action(request, pk, "check_out", "{name} checked out ({code}).")
+
+
+@require_POST
+def visitor_cancel(request, pk):
+    return _run_action(request, pk, "cancel", "Visit by {name} was cancelled ({code}).")

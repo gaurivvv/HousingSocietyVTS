@@ -55,9 +55,21 @@
             </ul>
         </div>
 
+        {% if visitor.can_check_in or visitor.can_check_out or visitor.can_cancel %}
+            <div class="card mt-3">
+                <div class="card-header bg-white fw-semibold">Actions</div>
+                <div class="card-body">
+                    {% include "visitors/_actions.html" %}
+                    {% if visitor.status == "EXPECTED" and not visitor.can_check_in %}
+                        <div class="form-text mt-2">Check-in is available on the expected date only.</div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+
         <div class="mt-3 d-flex flex-wrap gap-2">
+            <a href="{% url 'visitors:visitor_list' %}" class="btn btn-outline-secondary">All visitors</a>
             <a href="{% url 'visitors:visitor_create' %}" class="btn btn-outline-primary">Pre-register another visitor</a>
-            <a href="{% url 'dashboard:home' %}" class="btn btn-outline-secondary">Home</a>
         </div>
     </div>
 </div>

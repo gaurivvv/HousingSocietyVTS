@@ -50,6 +50,7 @@
                         <th>Status</th>
                         <th>Entry</th>
                         <th>Exit</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -80,6 +81,7 @@
                             </td>
                             <td class="text-nowrap">{{ visitor.entry_time|date:"H:i"|default:"-" }}</td>
                             <td class="text-nowrap">{{ visitor.exit_time|date:"H:i"|default:"-" }}</td>
+                            <td>{% include "visitors/_actions.html" %}</td>
                         </tr>
                     {% endfor %}
                 </tbody>

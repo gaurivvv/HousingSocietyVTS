@@ -1,0 +1,27 @@
+{% if visitor.can_check_in or visitor.can_check_out or visitor.can_cancel %}
+    <div class="d-flex flex-wrap gap-1">
+        {% if visitor.can_check_in %}
+            <form method="post" action="{% url 'visitors:visitor_check_in' visitor.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button type="submit" class="btn btn-sm btn-success">Check in</button>
+            </form>
+        {% endif %}
+        {% if visitor.can_check_out %}
+            <form method="post" action="{% url 'visitors:visitor_check_out' visitor.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button type="submit" class="btn btn-sm btn-primary">Check out</button>
+            </form>
+        {% endif %}
+        {% if visitor.can_cancel %}
+            <form method="post" action="{% url 'visitors:visitor_cancel' visitor.pk %}" onsubmit="return confirm('Cancel this visit?');">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button type="submit" class="btn btn-sm btn-outline-danger">Cancel visit</button>
+            </form>
+        {% endif %}
+    </div>
+{% else %}
+    <span class="text-muted small">-</span>
+{% endif %}

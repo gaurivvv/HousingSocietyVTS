@@ -102,3 +102,48 @@ class Visitor(models.Model):
                 code = generate_pass_code()
             self.pass_code = code
         super().save(*args, **kwargs)
+
+    # ----- Lifecycle actions (used by the visitor pages now, and by the API later) -----
+
+    @property
+    def can_check_in(self):
+        """Only an expected visitor, and only on their expected date."""
+        return self.status == self.Status.EXPECTED and self.expected_date == timezone.localdate()
+
+    @property
+    def can_check_out(self):
+        return self.status == self.Status.CHECKED_IN
+
+    @property
+    def can_cancel(self):
+        return self.status == self.Status.EXPECTED
+
+    def check_in(self):
+        """EXPECTED -> CHECKED_IN, recording the entry time."""
+        if self.status != self.Status.EXPECTED:
+            raise ValidationError(
+                f"Only an expected visitor can be checked in (this visitor is {self.get_status_display().lower()})."
+            )
+        if self.expected_date != timezone.localdate():
+            raise ValidationError("A visitor can only be checked in on their expected date.")
+        self.status = self.Status.CHECKED_IN
+        self.entry_time = timezone.now()
+        self.full_clean()
+        self.save()
+
+    def check_out(self):
+        """CHECKED_IN -> CHECKED_OUT, recording the exit time."""
+        if self.status != self.Status.CHECKED_IN:
+            raise ValidationError("Only a checked-in visitor can be checked out.")
+        self.status = self.Status.CHECKED_OUT
+        self.exit_time = timezone.now()
+        self.full_clean()
+        self.save()
+
+    def cancel(self):
+        """EXPECTED -> CANCELLED (the visitor never arrived)."""
+        if self.status != self.Status.EXPECTED:
+            raise ValidationError("Only an expected visitor can be cancelled.")
+        self.status = self.Status.CANCELLED
+        self.full_clean()
+        self.save()
