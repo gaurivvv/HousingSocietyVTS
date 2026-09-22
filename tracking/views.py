@@ -57,7 +57,9 @@ def gate_history(request):
     # Bound only when the address has filter values, e.g. /gate/history/?plate=mh12
     filter_form = HistoryFilterForm(request.GET or None)
 
-    logs = VehicleLog.objects.select_related("vehicle__resident__flat__wing")
+    logs = VehicleLog.objects.select_related(
+        "vehicle__resident__flat__wing", "visitor__resident", "visitor__flat__wing"
+    )
 
     if filter_form.is_valid():
         data = filter_form.cleaned_data
