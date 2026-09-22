@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth.decorators import permission_required
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -13,6 +14,7 @@ from .forms import VisitorFilterForm, VisitorForm
 from .models import Visitor
 
 
+@permission_required("visitors.view_visitor", raise_exception=True)
 def visitor_list(request):
     """Visitors for one expected date (today by default), with search and status filter."""
     data = request.GET.copy()
@@ -65,6 +67,7 @@ def visitor_list(request):
     return render(request, "visitors/visitor_list.html", context)
 
 
+@permission_required("visitors.add_visitor", raise_exception=True)
 def visitor_create(request):
     """Pre-register a visitor, then show their pass."""
     if request.method == "POST":
@@ -83,6 +86,7 @@ def visitor_create(request):
     return render(request, "visitors/visitor_form.html", context)
 
 
+@permission_required("visitors.view_visitor", raise_exception=True)
 def visitor_detail(request, pk):
     """The visitor pass: pass code, visit details and the vehicle's gate movements."""
     visitor = get_object_or_404(Visitor.objects.select_related("flat__wing", "resident"), pk=pk)
@@ -114,16 +118,19 @@ def _run_action(request, pk, action_name, success_message):
     return _redirect_back(request, visitor)
 
 
+@permission_required("visitors.check_in_out_visitor", raise_exception=True)
 @require_POST
 def visitor_check_in(request, pk):
     return _run_action(request, pk, "check_in", "{name} checked in ({code}).")
 
 
+@permission_required("visitors.check_in_out_visitor", raise_exception=True)
 @require_POST
 def visitor_check_out(request, pk):
     return _run_action(request, pk, "check_out", "{name} checked out ({code}).")
 
 
+@permission_required("visitors.cancel_visitor", raise_exception=True)
 @require_POST
 def visitor_cancel(request, pk):
     return _run_action(request, pk, "cancel", "Visit by {name} was cancelled ({code}).")

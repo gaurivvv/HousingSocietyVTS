@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth.decorators import permission_required
 from django.core.paginator import Paginator
 from django.shortcuts import redirect, render
 
@@ -9,6 +10,7 @@ from .models import VehicleLog
 from .utils import todays_counts, vehicles_inside
 
 
+@permission_required(("tracking.add_vehiclelog", "tracking.view_vehiclelog"), raise_exception=True)
 def gate(request):
     """Record a gate movement (POST) and show the gate summary and recent movements."""
     if request.method == "POST":
@@ -52,6 +54,7 @@ def gate(request):
     return render(request, "tracking/gate.html", context)
 
 
+@permission_required("tracking.view_vehiclelog", raise_exception=True)
 def gate_history(request):
     """All gate movements, newest first, with optional filters and pages of 25."""
     # Bound only when the address has filter values, e.g. /gate/history/?plate=mh12
