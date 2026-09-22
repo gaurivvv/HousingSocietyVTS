@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.validators import RegexValidator
 from django.db import models
 
@@ -20,6 +21,15 @@ class Resident(models.Model):
         Flat,
         on_delete=models.PROTECT,
         related_name="residents",
+    )
+    # Optional login for this resident. Managed only in Django Admin.
+    # SET_NULL: removing a login never removes the resident or their history.
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="resident",
     )
     full_name = models.CharField(max_length=100)
     resident_type = models.CharField(
