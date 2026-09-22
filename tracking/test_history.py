@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 from django.test import TestCase
+from accounts.testing import LoggedInAsSocietyAdminMixin
 from django.urls import reverse
 from django.utils import timezone
 
@@ -16,7 +17,7 @@ def at(year, month, day, hour, minute=0):
     return timezone.make_aware(datetime(year, month, day, hour, minute))
 
 
-class GateHistoryPageTests(TestCase):
+class GateHistoryPageTests(LoggedInAsSocietyAdminMixin, TestCase):
     @classmethod
     def setUpTestData(cls):
         wing = Wing.objects.create(name="A")

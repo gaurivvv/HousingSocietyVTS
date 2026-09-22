@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.test import TestCase
+from accounts.testing import LoggedInAsSocietyAdminMixin
 from django.urls import reverse
 from django.utils import timezone
 
@@ -10,7 +11,7 @@ from tracking.models import VehicleLog
 from vehicles.models import Vehicle
 
 
-class HomePageTests(TestCase):
+class HomePageTests(LoggedInAsSocietyAdminMixin, TestCase):
     def test_home_page_loads_on_an_empty_database(self):
         response = self.client.get(reverse("dashboard:home"))
         self.assertEqual(response.status_code, 200)

@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.test import TestCase
+from accounts.testing import LoggedInAsSocietyAdminMixin
 from django.urls import reverse
 from django.utils import timezone
 
@@ -11,7 +12,7 @@ from tracking.models import VehicleLog
 from .models import Visitor
 
 
-class VisitorPassGateMovementsTests(TestCase):
+class VisitorPassGateMovementsTests(LoggedInAsSocietyAdminMixin, TestCase):
     """Rajesh (A-101) expects Amit Guest today in MH14CD5678."""
 
     @classmethod

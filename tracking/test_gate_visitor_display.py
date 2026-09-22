@@ -1,4 +1,5 @@
 from django.test import TestCase
+from accounts.testing import LoggedInAsSocietyAdminMixin
 from django.urls import reverse
 
 from residents.models import Resident
@@ -8,7 +9,7 @@ from visitors.models import Visitor
 from .models import VehicleLog
 
 
-class GatePageVisitorDisplayTests(TestCase):
+class GatePageVisitorDisplayTests(LoggedInAsSocietyAdminMixin, TestCase):
     """Rajesh (A-101) expects Amit Guest today, arriving in MH14CD5678."""
 
     @classmethod

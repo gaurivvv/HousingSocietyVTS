@@ -1,4 +1,4 @@
-"""Helpers for tests: create a user in one of the three roles."""
+"""Helpers for tests: create a user in one of the three roles, or log the test client in."""
 
 from io import StringIO
 
@@ -24,3 +24,16 @@ def make_user(role, username=None):
     )
     user.groups.add(Group.objects.get(name=ROLE_NAMES[role]))
     return user
+
+
+class LoggedInAsSocietyAdminMixin:
+    """For page tests: log the test client in as a Society Admin before each test.
+
+    Put it first in the class line, before TestCase, for example:
+        class GatePageTests(LoggedInAsSocietyAdminMixin, TestCase):
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.page_test_user = make_user("admin", username="page_test_admin")
+        self.client.force_login(self.page_test_user)

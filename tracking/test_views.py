@@ -1,4 +1,5 @@
 from django.test import TestCase
+from accounts.testing import LoggedInAsSocietyAdminMixin
 from django.urls import reverse
 
 from residents.models import Resident
@@ -8,7 +9,7 @@ from vehicles.models import Vehicle
 from .models import VehicleLog
 
 
-class GatePageTests(TestCase):
+class GatePageTests(LoggedInAsSocietyAdminMixin, TestCase):
     @classmethod
     def setUpTestData(cls):
         wing = Wing.objects.create(name="A")

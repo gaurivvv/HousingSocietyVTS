@@ -1,4 +1,5 @@
 from django.test import TestCase
+from accounts.testing import LoggedInAsSocietyAdminMixin
 from django.urls import reverse
 
 from society.models import Flat, Wing
@@ -6,7 +7,7 @@ from society.models import Flat, Wing
 from .models import Resident
 
 
-class ResidentListPageTests(TestCase):
+class ResidentListPageTests(LoggedInAsSocietyAdminMixin, TestCase):
     @classmethod
     def setUpTestData(cls):
         wing_a = Wing.objects.create(name="A")
@@ -65,7 +66,7 @@ class ResidentListPageTests(TestCase):
         self.assertContains(response, reverse("residents:resident_list"))
 
 
-class ResidentCreatePageTests(TestCase):
+class ResidentCreatePageTests(LoggedInAsSocietyAdminMixin, TestCase):
     @classmethod
     def setUpTestData(cls):
         wing = Wing.objects.create(name="A")

@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.test import TestCase
+from accounts.testing import LoggedInAsSocietyAdminMixin
 from django.urls import reverse
 from django.utils import timezone
 
@@ -10,7 +11,7 @@ from society.models import Flat, Wing
 from .models import Visitor
 
 
-class VisitorListPageTests(TestCase):
+class VisitorListPageTests(LoggedInAsSocietyAdminMixin, TestCase):
     """Today: Amit (car, expected) and Neha (on foot, checked in).
     Tomorrow: Ravi (expected). Two days ago: Old Guest (expired)."""
 

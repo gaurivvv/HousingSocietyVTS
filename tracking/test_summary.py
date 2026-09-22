@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.test import TestCase
+from accounts.testing import LoggedInAsSocietyAdminMixin
 from django.urls import reverse
 from django.utils import timezone
 
@@ -8,7 +9,7 @@ from .models import VehicleLog
 from .utils import todays_counts, vehicles_inside
 
 
-class GateSummaryTests(TestCase):
+class GateSummaryTests(LoggedInAsSocietyAdminMixin, TestCase):
     def log(self, plate, movement, minutes_ago):
         return VehicleLog.objects.create(
             plate_number=plate,

@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from django.core.exceptions import ValidationError
 from django.test import TestCase
+from accounts.testing import LoggedInAsSocietyAdminMixin
 from django.urls import reverse
 from django.utils import timezone
 
@@ -80,7 +81,7 @@ class VisitorLifecycleModelTests(VisitorActionsTestData):
             arrived.cancel()
 
 
-class VisitorActionPageTests(VisitorActionsTestData):
+class VisitorActionPageTests(LoggedInAsSocietyAdminMixin, VisitorActionsTestData):
     def post_action(self, name, visitor, follow=True, **data):
         return self.client.post(reverse(f"visitors:{name}", args=[visitor.pk]), data, follow=follow)
 

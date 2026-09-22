@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.test import TestCase
+from accounts.testing import LoggedInAsSocietyAdminMixin
 from django.urls import reverse
 from django.utils import timezone
 
@@ -26,7 +27,7 @@ class VisitorPagesTestData(TestCase):
         )
 
 
-class VisitorCreatePageTests(VisitorPagesTestData):
+class VisitorCreatePageTests(LoggedInAsSocietyAdminMixin, VisitorPagesTestData):
     def form_data(self, **changes):
         data = {
             "full_name": "Amit Guest",
@@ -101,7 +102,7 @@ class VisitorCreatePageTests(VisitorPagesTestData):
         self.assertEqual(Visitor.objects.count(), 0)
 
 
-class VisitorDetailPageTests(VisitorPagesTestData):
+class VisitorDetailPageTests(LoggedInAsSocietyAdminMixin, VisitorPagesTestData):
     def test_pass_page_shows_code_and_visit_details(self):
         visitor = Visitor.objects.create(
             full_name="Amit Guest", phone="9000000002", flat=self.flat_101,

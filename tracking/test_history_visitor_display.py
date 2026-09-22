@@ -1,4 +1,5 @@
 from django.test import TestCase
+from accounts.testing import LoggedInAsSocietyAdminMixin
 from django.urls import reverse
 
 from residents.models import Resident
@@ -9,7 +10,7 @@ from visitors.models import Visitor
 from .models import VehicleLog
 
 
-class GateHistoryVisitorDisplayTests(TestCase):
+class GateHistoryVisitorDisplayTests(LoggedInAsSocietyAdminMixin, TestCase):
     """One registered movement, one visitor movement and one unknown movement."""
 
     @classmethod

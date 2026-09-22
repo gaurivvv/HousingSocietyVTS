@@ -1,8 +1,9 @@
 from django.test import TestCase
+from accounts.testing import LoggedInAsSocietyAdminMixin
 from django.urls import reverse
 
 
-class GateHistoryLinkTests(TestCase):
+class GateHistoryLinkTests(LoggedInAsSocietyAdminMixin, TestCase):
     def html(self, url_name):
         return self.client.get(reverse(url_name)).content.decode()
 
