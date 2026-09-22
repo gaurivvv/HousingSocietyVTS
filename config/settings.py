@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "dashboard",
     "tracking",
     "visitors",
+    "accounts",
 ]
 
 MIDDLEWARE = [
