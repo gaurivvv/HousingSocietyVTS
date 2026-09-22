@@ -33,7 +33,13 @@ class LoggedInAsSocietyAdminMixin:
         class GatePageTests(LoggedInAsSocietyAdminMixin, TestCase):
     """
 
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        # Once per test class, inside the class-level transaction that TestCase opens,
+        # so the groups and this user are rolled back when the class finishes.
+        cls.page_test_user = make_user("admin", username="page_test_admin")
+
     def setUp(self):
         super().setUp()
-        self.page_test_user = make_user("admin", username="page_test_admin")
         self.client.force_login(self.page_test_user)
