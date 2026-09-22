@@ -55,6 +55,34 @@
             </ul>
         </div>
 
+        {% if visitor.vehicle_number %}
+            <div class="card mt-3">
+                <div class="card-header bg-white fw-semibold">Vehicle movements at the gate</div>
+                {% if gate_logs %}
+                    <ul class="list-group list-group-flush">
+                        {% for log in gate_logs %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span class="text-nowrap">{{ log.timestamp|date:"d M Y, H:i" }}</span>
+                                <span>
+                                    {% if log.movement_type == "ENTRY" %}
+                                        <span class="badge text-bg-primary">Entry</span>
+                                    {% else %}
+                                        <span class="badge text-bg-secondary">Exit</span>
+                                    {% endif %}
+                                    <span class="fw-semibold ms-1">{{ log.plate_number }}</span>
+                                </span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="card-body text-muted small">No gate movements recorded for this vehicle yet.</div>
+                {% endif %}
+                <div class="card-footer bg-white small text-muted">
+                    Gate movements are recorded separately; they do not check the visitor in or out.
+                </div>
+            </div>
+        {% endif %}
+
         {% if visitor.can_check_in or visitor.can_check_out or visitor.can_cancel %}
             <div class="card mt-3">
                 <div class="card-header bg-white fw-semibold">Actions</div>

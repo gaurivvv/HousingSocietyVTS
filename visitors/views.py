@@ -84,9 +84,11 @@ def visitor_create(request):
 
 
 def visitor_detail(request, pk):
-    """The visitor pass: pass code and visit details."""
+    """The visitor pass: pass code, visit details and the vehicle's gate movements."""
     visitor = get_object_or_404(Visitor.objects.select_related("flat__wing", "resident"), pk=pk)
-    return render(request, "visitors/visitor_detail.html", {"visitor": visitor})
+    # Gate logs linked to this visitor (reverse link from VehicleLog.visitor), in the order they happened
+    gate_logs = visitor.gate_logs.order_by("timestamp", "id")
+    return render(request, "visitors/visitor_detail.html", {"visitor": visitor, "gate_logs": gate_logs})
 
 
 # ----- Lifecycle actions: POST only -----
