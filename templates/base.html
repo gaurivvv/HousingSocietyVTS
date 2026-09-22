@@ -20,29 +20,43 @@
             </button>
             <div class="collapse navbar-collapse" id="mainNavbar">
                 <ul class="navbar-nav me-auto">
+                    {% if user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.app_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard:home' %}">Home</a>
                     </li>
+                    {% if perms.residents.view_resident %}
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.app_name == 'residents' %}active{% endif %}" href="{% url 'residents:resident_list' %}">Residents</a>
                     </li>
+                    {% endif %}
+                    {% if perms.vehicles.view_vehicle %}
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.app_name == 'vehicles' %}active{% endif %}" href="{% url 'vehicles:vehicle_list' %}">Vehicles</a>
                     </li>
+                    {% endif %}
+                    {% if perms.tracking.add_vehiclelog %}
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.view_name == 'tracking:gate' %}active{% endif %}" href="{% url 'tracking:gate' %}">Gate</a>
                     </li>
+                    {% endif %}
+                    {% if perms.tracking.view_vehiclelog %}
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.view_name == 'tracking:history' %}active{% endif %}" href="{% url 'tracking:history' %}">Gate History</a>
                     </li>
+                    {% endif %}
+                    {% if perms.visitors.view_visitor %}
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.app_name == 'visitors' %}active{% endif %}" href="{% url 'visitors:visitor_list' %}">Visitors</a>
                     </li>
+                    {% endif %}
+                    {% endif %}
                 </ul>
                 <ul class="navbar-nav align-items-lg-center">
+                    {% if user.is_staff %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'admin:index' %}">Django Admin</a>
                     </li>
+                    {% endif %}
                     {% if user.is_authenticated %}
                         <li class="nav-item">
                             <span class="navbar-text small ms-lg-3">Signed in as <strong>{{ user.get_username }}</strong></span>

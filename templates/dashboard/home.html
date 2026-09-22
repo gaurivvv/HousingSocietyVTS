@@ -71,12 +71,27 @@
 <div class="card">
     <div class="card-header bg-white fw-semibold">Quick Links</div>
     <div class="list-group list-group-flush">
+        {% if perms.tracking.add_vehiclelog %}
         <a href="{% url 'tracking:gate' %}" class="list-group-item list-group-item-action">Record a gate movement</a>
+        {% endif %}
+        {% if perms.visitors.view_visitor %}
+        <a href="{% url 'visitors:visitor_list' %}" class="list-group-item list-group-item-action">View today's visitors</a>
+        {% endif %}
+        {% if perms.residents.view_resident %}
         <a href="{% url 'residents:resident_list' %}" class="list-group-item list-group-item-action">View residents</a>
+        {% endif %}
+        {% if perms.residents.add_resident %}
         <a href="{% url 'residents:resident_create' %}" class="list-group-item list-group-item-action">Add a resident</a>
+        {% endif %}
+        {% if perms.vehicles.view_vehicle %}
         <a href="{% url 'vehicles:vehicle_list' %}" class="list-group-item list-group-item-action">View vehicles</a>
+        {% endif %}
+        {% if perms.vehicles.add_vehicle %}
         <a href="{% url 'vehicles:vehicle_create' %}" class="list-group-item list-group-item-action">Register a vehicle</a>
+        {% endif %}
+        {% if user.is_staff %}
         <a href="{% url 'admin:index' %}" class="list-group-item list-group-item-action">Django Admin (wings and flats)</a>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

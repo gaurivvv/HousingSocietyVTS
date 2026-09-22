@@ -5,7 +5,7 @@
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
     <h1 class="h3 mb-0">Vehicles</h1>
-    <a href="{% url 'vehicles:vehicle_create' %}" class="btn btn-primary">Add Vehicle</a>
+    {% if perms.vehicles.add_vehicle %}<a href="{% url 'vehicles:vehicle_create' %}" class="btn btn-primary">Add Vehicle</a>{% endif %}
 </div>
 
 <form method="get" class="row g-2 mb-3">
@@ -47,7 +47,7 @@
                         <th>Owner</th>
                         <th>Flat</th>
                         <th>Status</th>
-                        <th class="text-end">Actions</th>
+                        {% if perms.vehicles.change_vehicle %}<th class="text-end">Actions</th>{% endif %}
                     </tr>
                 </thead>
                 <tbody>
@@ -66,10 +66,10 @@
                                     <span class="badge text-bg-secondary">Inactive</span>
                                 {% endif %}
                             </td>
-                            <td class="text-end">
+                            {% if perms.vehicles.change_vehicle %}<td class="text-end">
                                 <a href="{% url 'vehicles:vehicle_update' vehicle.pk %}"
                                    class="btn btn-sm btn-outline-primary">Edit</a>
-                            </td>
+                            </td>{% endif %}
                         </tr>
                     {% endfor %}
                 </tbody>
