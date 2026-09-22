@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 
 from residents.models import Resident
 from society.models import Flat, Wing
@@ -7,7 +7,15 @@ from vehicles.models import Vehicle
 
 
 def home(request):
-    """Home page with live counts from the database."""
+    """Home page with live counts from the database.
+
+    Users without any staff permission (for example residents, or accounts with no role yet)
+    are sent to their own account page instead.
+    """
+    user = request.user
+    if not (user.has_perm("tracking.view_vehiclelog") or user.has_perm("residents.view_resident")):
+        return redirect("accounts:my_account")
+
     today = todays_counts()
     context = {
         "wing_count": Wing.objects.count(),

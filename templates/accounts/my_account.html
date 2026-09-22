@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}My account{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <h1 class="h3 mb-3">My account</h1>
+
+        <div class="card">
+            <div class="card-body">
+                <p class="mb-2">
+                    Signed in as <strong>{{ user.get_username }}</strong>{% if user.get_full_name %} ({{ user.get_full_name }}){% endif %}.
+                </p>
+                <p class="text-muted mb-0">
+                    The resident portal is coming soon. You will be able to see your profile,
+                    your vehicles and your visitors here.
+                </p>
+            </div>
+        </div>
+
+        <p class="small text-muted mt-3">Use the Log out button at the top right when you have finished.</p>
+    </div>
+</div>
+{% endblock %}
