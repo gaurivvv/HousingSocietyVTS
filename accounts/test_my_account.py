@@ -21,7 +21,7 @@ class ResidentRedirectAndMyAccountTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "accounts/my_account.html")
         self.assertContains(response, "resident_asha")
-        self.assertContains(response, "The resident portal is coming soon.")
+        self.assertContains(response, "Your login isn't linked to a resident record yet.")
 
     def test_account_with_no_role_is_sent_to_my_account(self):
         self.client.force_login(User.objects.create_user(username="no_role_yet", password=TEST_PASSWORD))
@@ -56,4 +56,4 @@ class ResidentRedirectAndMyAccountTests(TestCase):
             reverse("accounts:login"), {"username": "resident_asha", "password": TEST_PASSWORD}, follow=True
         )
         self.assertRedirects(response, self.me_url)
-        self.assertContains(response, "The resident portal is coming soon.")
+        self.assertContains(response, "Your login isn't linked to a resident record yet.")
