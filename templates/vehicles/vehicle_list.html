@@ -3,31 +3,40 @@
 {% block title %}Vehicles{% endblock %}
 
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-    <h1 class="h3 mb-0">Vehicles</h1>
-    {% if perms.vehicles.add_vehicle %}<a href="{% url 'vehicles:vehicle_create' %}" class="btn btn-primary">Add Vehicle</a>{% endif %}
+<div class="page-header">
+    <div>
+        <h1 class="h3 mb-0">Vehicles</h1>
+        <p class="text-muted small mb-0">Vehicles registered to society residents.</p>
+    </div>
+    {% if perms.vehicles.add_vehicle %}<a href="{% url 'vehicles:vehicle_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Add Vehicle</a>{% endif %}
 </div>
 
-<form method="get" class="row g-2 mb-3">
-    <div class="col-md-5">
-        <input type="text" name="q" value="{{ query }}" class="form-control"
-               placeholder="Plate, model, colour, owner name{% if can_search_phone %}, phone{% endif %} or flat (A-101)">
+<div class="card mb-3">
+    <div class="card-body py-3">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <input type="text" name="q" value="{{ query }}" class="form-control"
+                       placeholder="Plate, model, colour, owner name{% if can_search_phone %}, phone{% endif %} or flat (A-101)">
+            </div>
+            <div class="col-md-3">
+                <select name="type" class="form-select">
+                    <option value="">All types</option>
+                    {% for value, label in vehicle_types %}
+                        <option value="{{ value }}" {% if value == vehicle_type%}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-outline-primary">
+                    <i class="bi bi-search me-1"></i>Search
+                </button>
+                {% if query or vehicle_type %}
+                    <a href="{% url 'vehicles:vehicle_list' %}" class="btn btn-outline-secondary">Clear</a>
+                {% endif %}
+            </div>
+        </form>
     </div>
-    <div class="col-md-3">
-        <select name="type" class="form-select">
-            <option value="">All types</option>
-            {% for value, label in vehicle_types %}
-                <option value="{{ value }}" {% if value == vehicle_type %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="col-auto">
-        <button type="submit" class="btn btn-outline-primary">Search</button>
-        {% if query or vehicle_type %}
-            <a href="{% url 'vehicles:vehicle_list' %}" class="btn btn-outline-secondary">Clear</a>
-        {% endif %}
-    </div>
-</form>
+</div>
 
 <div class="card">
     <div class="card-header bg-white d-flex justify-content-between align-items-center">
@@ -53,12 +62,12 @@
                 <tbody>
                     {% for vehicle in vehicles %}
                         <tr>
-                            <td class="fw-semibold">{{ vehicle.vehicle_number }}</td>
+                            <td><span class="plate plate-lg">{{ vehicle.vehicle_number }}</span></td>
                             <td>{{ vehicle.get_vehicle_type_display }}</td>
                             <td>{{ vehicle.model_name|default:"-" }}</td>
                             <td>{{ vehicle.colour|default:"-" }}</td>
                             <td>{{ vehicle.resident.full_name }}</td>
-                            <td>{{ vehicle.resident.flat }}</td>
+                            <td class="text-nowrap">{{ vehicle.resident.flat }}</td>
                             <td>
                                 {% if vehicle.is_active %}
                                     <span class="badge text-bg-success">Active</span>
@@ -68,7 +77,7 @@
                             </td>
                             {% if perms.vehicles.change_vehicle %}<td class="text-end">
                                 <a href="{% url 'vehicles:vehicle_update' vehicle.pk %}"
-                                   class="btn btn-sm btn-outline-primary">Edit</a>
+                                   class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i> Edit</a>
                             </td>{% endif %}
                         </tr>
                     {% endfor %}
@@ -76,11 +85,12 @@
             </table>
         </div>
     {% else %}
-        <div class="card-body text-muted">
+        <div class="empty-state">
+            <i class="bi bi-car-front"></i>
             {% if query or vehicle_type %}
-                No vehicles found for this search.
+                <div>No vehicles found for this search.</div>
             {% else %}
-                No vehicles have been registered yet.
+                <div>No vehicles have been registered yet.</div>
             {% endif %}
         </div>
     {% endif %}

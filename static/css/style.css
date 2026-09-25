@@ -183,3 +183,30 @@ h2.h5 { font-size: 1.05rem; font-weight: 600; }
 
 .badge.movement-entry { background-color: #e3f3e8; color: #1c6b38; border: 1px solid #bcdfc8; }
 .badge.movement-exit  { background-color: #fdeee3; color: #9a4b13; border: 1px solid #f3d2b8; }
+
+/* ---------- Page header and empty states ---------- */
+
+.page-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.empty-state {
+    padding: 2.25rem 1.25rem;
+    text-align: center;
+    color: #7b8794;
+    font-size: 0.9rem;
+}
+
+.empty-state .bi {
+    display: block;
+    font-size: 1.6rem;
+    margin-bottom: 0.5rem;
+    color: #b4bcc6;
+}
+
+.plate-lg { font-size: 0.92rem; padding: 0.18rem 0.55rem; }
