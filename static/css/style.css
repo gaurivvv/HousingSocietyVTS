@@ -1,13 +1,168 @@
-body {
-    background-color: #f5f6f8;
+:root {
+    --app-sidebar-bg: #17212f;
+    --app-sidebar-fg: #aebacb;
+    --app-sidebar-active: #2b6cb0;
+    --app-border: #dfe3e8;
+    --app-bg: #f4f6f9;
+    --app-ink: #1f2933;
 }
 
-.card {
-    border-color: #e3e6ea;
+body {
+    background-color: var(--app-bg);
+    color: var(--app-ink);
+    font-family: Calibri, "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+    font-size: 0.95rem;
 }
+
+/* ---------- App shell ---------- */
+
+.app-shell { display: flex; min-height: 100vh; }
+
+.app-sidebar {
+    width: 250px;
+    flex: 0 0 250px;
+    background-color: var(--app-sidebar-bg);
+    color: var(--app-sidebar-fg);
+    display: flex;
+    flex-direction: column;
+}
+
+.app-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+
+.app-topbar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #fff;
+    border-bottom: 1px solid var(--app-border);
+    padding: 0.6rem 1.25rem;
+}
+
+.app-topbar-title { font-weight: 600; font-size: 0.95rem; }
+.app-topbar .nav-link { padding: 0; color: var(--app-sidebar-active); }
+
+.app-content { flex: 1 1 auto; padding: 1.5rem 1.25rem; }
+
+.app-footer {
+    border-top: 1px solid var(--app-border);
+    background: #fff;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.8rem;
+    color: #7b8794;
+}
+
+/* ---------- Brand ---------- */
+
+.app-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 1rem 1.15rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+.app-brand .bi { font-size: 1.5rem; color: #6ba7e8; }
+.app-brand-name { font-weight: 600; line-height: 1.2; }
+.app-brand-sub { font-size: 0.72rem; color: var(--app-sidebar-fg); }
+
+/* ---------- Sidebar navigation ---------- */
+
+.app-nav { padding: 0.75rem 0; flex: 1 1 auto; overflow-y: auto; }
+
+.app-nav-heading {
+    padding: 0.85rem 1.15rem 0.35rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #6b7a8d;
+}
+
+.app-nav .nav-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding-left: 1.15rem;
+}
+
+.app-nav .nav-item > .bi {
+    width: 1.25rem;
+    font-size: 0.95rem;
+    color: #8496ab;
+    flex: 0 0 auto;
+}
+
+.app-nav .nav-link {
+    color: var(--app-sidebar-fg);
+    padding: 0.5rem 1.15rem 0.5rem 0.55rem;
+    flex: 1 1 auto;
+    font-size: 0.92rem;
+}
+
+/* Makes the whole row clickable without changing the anchor markup */
+.app-nav .nav-link::after { content: ""; position: absolute; inset: 0; }
+
+.app-nav .nav-item:hover { background-color: rgba(255, 255, 255, 0.06); }
+.app-nav .nav-item:hover .nav-link,
+.app-nav .nav-item:hover > .bi { color: #fff; }
+
+.app-nav .nav-item:has(.nav-link.active) {
+    background-color: rgba(43, 108, 176, 0.22);
+    box-shadow: inset 3px 0 0 var(--app-sidebar-active);
+}
+
+.app-nav .nav-link.active { color: #fff; font-weight: 600; }
+.app-nav .nav-item:has(.nav-link.active) > .bi { color: #6ba7e8; }
+
+.app-sidebar-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0.9rem 1.15rem;
+}
+
+.app-user {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    margin-bottom: 0.6rem;
+}
+
+.app-user strong { color: #fff; }
+
+/* ---------- Content elements ---------- */
+
+h1.h3 { font-size: 1.4rem; font-weight: 600; }
+h2.h5 { font-size: 1.05rem; font-weight: 600; }
+
+.card { border-color: var(--app-border); border-radius: 6px; }
+.card-header { border-bottom-color: var(--app-border); font-size: 0.95rem; }
 
 .stat-card .stat-value {
-    font-size: 2rem;
+    font-size: 1.85rem;
     font-weight: 600;
     line-height: 1.2;
+}
+
+.table { font-size: 0.9rem; }
+.table > thead th {
+    font-size: 0.74rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #52606d;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.table > tbody td { padding-top: 0.6rem; padding-bottom: 0.6rem; }
+
+.badge { font-weight: 600; font-size: 0.72rem; }
+.btn { font-size: 0.9rem; }
+.btn-sm { font-size: 0.8rem; }
+.form-label { font-size: 0.88rem; font-weight: 600; margin-bottom: 0.3rem; }
+.form-text { font-size: 0.78rem; }
+
+/* ---------- Small screens ---------- */
+
+@media (max-width: 991.98px) {
+    .app-sidebar { flex: 0 0 auto; }
+    .app-content { padding: 1rem 0.9rem; }
 }

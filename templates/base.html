@@ -6,96 +6,134 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Home{% endblock %} | Housing Society VTS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
 </head>
-<body class="d-flex flex-column min-vh-100">
+<body>
+<div class="app-shell">
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand fw-semibold" href="{% url 'dashboard:home' %}">Housing Society VTS</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#mainNavbar" aria-controls="mainNavbar"
-                    aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="mainNavbar">
-                <ul class="navbar-nav me-auto">
-                    {% if user.is_authenticated %}
-                    <li class="nav-item">
+    <aside class="app-sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="appSidebar">
+        <div class="app-brand">
+            <i class="bi bi-buildings"></i>
+            <div>
+                <div class="app-brand-name">Housing Society</div>
+                <div class="app-brand-sub">Member &amp; Vehicle Tracking</div>
+            </div>
+            <button type="button" class="btn-close btn-close-white ms-auto d-lg-none"
+                    data-bs-dismiss="offcanvas" data-bs-target="#appSidebar" aria-label="Close"></button>
+        </div>
+
+        {% if user.is_authenticated %}
+            <nav class="app-nav">
+                <div class="app-nav-heading">Overview</div>
+                <ul class="nav flex-column">
+                    <li class="nav-item"><i class="bi bi-speedometer2"></i>
                         <a class="nav-link {% if request.resolver_match.app_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard:home' %}">Home</a>
                     </li>
-                    {% if perms.residents.view_resident %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.app_name == 'residents' %}active{% endif %}" href="{% url 'residents:resident_list' %}">Residents</a>
-                    </li>
-                    {% endif %}
-                    {% if perms.vehicles.view_vehicle %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.app_name == 'vehicles' %}active{% endif %}" href="{% url 'vehicles:vehicle_list' %}">Vehicles</a>
-                    </li>
-                    {% endif %}
-                    {% if perms.tracking.add_vehiclelog %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.view_name == 'tracking:gate' %}active{% endif %}" href="{% url 'tracking:gate' %}">Gate</a>
-                    </li>
-                    {% endif %}
-                    {% if perms.tracking.view_vehiclelog %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.view_name == 'tracking:history' %}active{% endif %}" href="{% url 'tracking:history' %}">Gate History</a>
-                    </li>
-                    {% endif %}
-                    {% if perms.visitors.view_visitor %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.app_name == 'visitors' %}active{% endif %}" href="{% url 'visitors:visitor_list' %}">Visitors</a>
-                    </li>
-                    {% endif %}
-                    {% endif %}
                 </ul>
-                <ul class="navbar-nav align-items-lg-center">
+
+                {% if perms.residents.view_resident or perms.vehicles.view_vehicle %}
+                    <div class="app-nav-heading">Management</div>
+                    <ul class="nav flex-column">
+                        {% if perms.residents.view_resident %}
+                            <li class="nav-item"><i class="bi bi-people"></i>
+                                <a class="nav-link {% if request.resolver_match.app_name == 'residents' %}active{% endif %}" href="{% url 'residents:resident_list' %}">Residents</a>
+                            </li>
+                        {% endif %}
+                        {% if perms.vehicles.view_vehicle %}
+                            <li class="nav-item"><i class="bi bi-car-front"></i>
+                                <a class="nav-link {% if request.resolver_match.app_name == 'vehicles' %}active{% endif %}" href="{% url 'vehicles:vehicle_list' %}">Vehicles</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                {% endif %}
+
+                {% if perms.tracking.add_vehiclelog or perms.tracking.view_vehiclelog or perms.visitors.view_visitor %}
+                    <div class="app-nav-heading">Security</div>
+                    <ul class="nav flex-column">
+                        {% if perms.tracking.add_vehiclelog %}
+                            <li class="nav-item"><i class="bi bi-door-open"></i>
+                                <a class="nav-link {% if request.resolver_match.view_name == 'tracking:gate' %}active{% endif %}" href="{% url 'tracking:gate' %}">Gate</a>
+                            </li>
+                        {% endif %}
+                        {% if perms.tracking.view_vehiclelog %}
+                            <li class="nav-item"><i class="bi bi-clock-history"></i>
+                                <a class="nav-link {% if request.resolver_match.view_name == 'tracking:history' %}active{% endif %}" href="{% url 'tracking:history' %}">Gate History</a>
+                            </li>
+                        {% endif %}
+                        {% if perms.visitors.view_visitor %}
+                            <li class="nav-item"><i class="bi bi-person-badge"></i>
+                                <a class="nav-link {% if request.resolver_match.app_name == 'visitors' %}active{% endif %}" href="{% url 'visitors:visitor_list' %}">Visitors</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                {% endif %}
+
+                <div class="app-nav-heading">Account</div>
+                <ul class="nav flex-column">
+                    <li class="nav-item"><i class="bi bi-person-circle"></i>
+                        <a class="nav-link {% if request.resolver_match.view_name == 'accounts:my_account' %}active{% endif %}" href="{% url 'accounts:my_account' %}">My Account</a>
+                    </li>
                     {% if user.is_staff %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'admin:index' %}">Django Admin</a>
-                    </li>
-                    {% endif %}
-                    {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <span class="navbar-text small ms-lg-3">Signed in as <strong>{{ user.get_username }}</strong></span>
-                        </li>
-                        <li class="nav-item">
-                            <form method="post" action="{% url 'accounts:logout' %}" class="d-inline ms-lg-2">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-outline-light btn-sm">Log out</button>
-                            </form>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'accounts:login' %}">Log in</a>
+                        <li class="nav-item"><i class="bi bi-gear"></i>
+                            <a class="nav-link" href="{% url 'admin:index' %}">Django Admin</a>
                         </li>
                     {% endif %}
                 </ul>
-            </div>
-        </div>
-    </nav>
+            </nav>
 
-    <main class="container py-4 flex-grow-1">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <div class="app-sidebar-footer">
+                <div class="app-user">
+                    <i class="bi bi-person-fill"></i>
+                    <span>Signed in as <strong>{{ user.get_username }}</strong></span>
                 </div>
-            {% endfor %}
+                <form method="post" action="{% url 'accounts:logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-light btn-sm w-100">
+                        <i class="bi bi-box-arrow-right me-1"></i>Log out
+                    </button>
+                </form>
+            </div>
         {% endif %}
+    </aside>
 
-        {% block content %}{% endblock %}
-    </main>
+    <div class="app-main">
+        <header class="app-topbar">
+            {% if user.is_authenticated %}
+                <button class="btn btn-sm btn-outline-secondary d-lg-none" type="button"
+                        data-bs-toggle="offcanvas" data-bs-target="#appSidebar" aria-controls="appSidebar">
+                    <i class="bi bi-list"></i>
+                </button>
+            {% endif %}
+            <span class="app-topbar-title">Member &amp; Vehicle Tracking System</span>
+            <div class="ms-auto">
+                {% if user.is_authenticated %}
+                    <span class="navbar-text small text-muted d-none d-sm-inline">{{ user.get_username }}</span>
+                {% else %}
+                    <a class="nav-link" href="{% url 'accounts:login' %}">Log in</a>
+                {% endif %}
+            </div>
+        </header>
 
-    <footer class="border-top bg-white py-3">
-        <div class="container small text-muted">
+        <main class="app-content">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="app-footer">
             Housing Society Member &amp; Vehicle Tracking System
-        </div>
-    </footer>
+        </footer>
+    </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
