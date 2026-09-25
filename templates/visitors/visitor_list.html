@@ -3,13 +3,16 @@
 {% block title %}Visitors{% endblock %}
 
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-    <h1 class="h3 mb-0">Visitors</h1>
-    <a href="{% url 'visitors:visitor_create' %}" class="btn btn-primary">Pre-register a Visitor</a>
+<div class="page-header">
+    <div>
+        <h1 class="h3 mb-0">Visitors</h1>
+        <p class="text-muted small mb-0">Pre-registered visitors and their gate status.</p>
+    </div>
+    <a href="{% url 'visitors:visitor_create' %}" class="btn btn-primary"><i class="bi bi-person-plus me-1"></i>Pre-register a Visitor</a>
 </div>
 
 <div class="card mb-3">
-    <div class="card-body">
+    <div class="card-body py-3">
         <form method="get" class="row g-2 align-items-end" novalidate>
             {% for field in filter_form %}
                 <div class="col-md">
@@ -24,7 +27,7 @@
                 </div>
             {% endfor %}
             <div class="col-md-auto d-flex gap-2">
-                <button type="submit" class="btn btn-outline-primary">Filter</button>
+                <button type="submit" class="btn btn-outline-primary"><i class="bi bi-funnel me-1"></i>Filter</button>
                 <a href="{% url 'visitors:visitor_list' %}" class="btn btn-outline-secondary">Today</a>
             </div>
         </form>
@@ -64,7 +67,7 @@
                                 <div class="small text-muted">{{ visitor.phone }}</div>
                             </td>
                             <td>{{ visitor.resident.full_name }} <span class="text-muted small">({{ visitor.flat }})</span></td>
-                            <td>{{ visitor.vehicle_number|default:"On foot" }}</td>
+                            <td>{% if visitor.vehicle_number %}<span class="plate">{{ visitor.vehicle_number }}</span>{% else %}<span class="text-muted">On foot</span>{% endif %}</td>
                             <td class="text-nowrap">{{ visitor.expected_date|date:"d M Y" }}</td>
                             <td>
                                 {% if visitor.status == "EXPECTED" %}
@@ -88,7 +91,10 @@
             </table>
         </div>
     {% else %}
-        <div class="card-body text-muted">No visitors found for these filters.</div>
+        <div class="empty-state">
+            <i class="bi bi-person-badge"></i>
+            <div>No visitors found for these filters.</div>
+        </div>
     {% endif %}
 
     {% if page_obj.has_other_pages %}

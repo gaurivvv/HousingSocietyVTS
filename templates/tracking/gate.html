@@ -3,7 +3,13 @@
 {% block title %}Gate{% endblock %}
 
 {% block content %}
-<h1 class="h3 mb-3">Gate</h1>
+<div class="page-header">
+    <div>
+        <h1 class="h3 mb-0">Gate</h1>
+        <p class="text-muted small mb-0">Record vehicle entries and exits at the society gate.</p>
+    </div>
+    <a href="{% url 'tracking:history' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-clock-history me-1"></i>Full history</a>
+</div>
 
 <div class="row g-3 mb-3">
     <div class="col-sm-4">
@@ -55,7 +61,7 @@
                         </div>
                     {% endfor %}
 
-                    <button type="submit" class="btn btn-primary w-100">Record</button>
+                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-check2 me-1"></i>Record</button>
                 </form>
             </div>
         </div>
@@ -84,12 +90,12 @@
                             {% for log in recent_logs %}
                                 <tr>
                                     <td class="text-nowrap">{{ log.timestamp|date:"d M Y, H:i" }}</td>
-                                    <td class="fw-semibold">{{ log.plate_number }}</td>
+                                    <td><span class="plate">{{ log.plate_number }}</span></td>
                                     <td>
                                         {% if log.movement_type == "ENTRY" %}
-                                            <span class="badge text-bg-primary">Entry</span>
+                                            <span class="badge movement-entry">Entry</span>
                                         {% else %}
-                                            <span class="badge text-bg-secondary">Exit</span>
+                                            <span class="badge movement-exit">Exit</span>
                                         {% endif %}
                                     </td>
                                     <td>
@@ -109,7 +115,10 @@
                     </table>
                 </div>
             {% else %}
-                <div class="card-body text-muted">No gate movements recorded yet.</div>
+                <div class="empty-state">
+                    <i class="bi bi-door-open"></i>
+                    <div>No gate movements recorded yet.</div>
+                </div>
             {% endif %}
         </div>
     </div>
@@ -131,7 +140,7 @@
                 <tbody>
                     {% for log in inside_logs %}
                         <tr>
-                            <td class="fw-semibold">{{ log.plate_number }}</td>
+                            <td><span class="plate">{{ log.plate_number }}</span></td>
                             <td>{{ log.get_category_display }}</td>
                             <td>{% include "tracking/_owner.html" %}</td>
                             <td class="text-nowrap">{{ log.timestamp|date:"d M Y, H:i" }}</td>
@@ -141,7 +150,10 @@
             </table>
         </div>
     {% else %}
-        <div class="card-body text-muted">No vehicles are inside right now.</div>
+        <div class="empty-state">
+            <i class="bi bi-car-front"></i>
+            <div>No vehicles are inside right now.</div>
+        </div>
     {% endif %}
 </div>
 {% endblock %}
