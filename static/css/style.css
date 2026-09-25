@@ -166,3 +166,20 @@ h2.h5 { font-size: 1.05rem; font-weight: 600; }
     .app-sidebar { flex: 0 0 auto; }
     .app-content { padding: 1rem 0.9rem; }
 }
+
+/* ---------- Vehicle plate and gate movement ---------- */
+
+.plate {
+    display: inline-block;
+    font-family: Consolas, "Courier New", monospace;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    background: #fff;
+    border: 1px solid #b4bcc6;
+    border-radius: 3px;
+    padding: 0.1rem 0.45rem;
+    white-space: nowrap;
+}
+
+.badge.movement-entry { background-color: #e3f3e8; color: #1c6b38; border: 1px solid #bcdfc8; }
+.badge.movement-exit  { background-color: #fdeee3; color: #9a4b13; border: 1px solid #f3d2b8; }
