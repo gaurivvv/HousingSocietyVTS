@@ -14,12 +14,12 @@
 
     <aside class="app-sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="appSidebar">
         <div class="app-brand">
-            <i class="bi bi-buildings"></i>
+            <span class="app-brand-mark"><i class="bi bi-buildings"></i></span>
             <div>
                 <div class="app-brand-name">Housing Society</div>
                 <div class="app-brand-sub">Member &amp; Vehicle Tracking</div>
             </div>
-            <button type="button" class="btn-close btn-close-white ms-auto d-lg-none"
+            <button type="button" class="btn-close btn-close-white ms-auto d-lg-none" style="display:none"
                     data-bs-dismiss="offcanvas" data-bs-target="#appSidebar" aria-label="Close"></button>
         </div>
 
@@ -108,7 +108,7 @@
             <span class="app-topbar-title">Member &amp; Vehicle Tracking System</span>
             <div class="ms-auto">
                 {% if user.is_authenticated %}
-                    <span class="navbar-text small text-muted d-none d-sm-inline">{{ user.get_username }}</span>
+                    <span class="app-user-chip d-none d-sm-inline-flex"><i class="bi bi-person-circle"></i>{{ user.get_username }}</span>
                 {% else %}
                     <a class="nav-link" href="{% url 'accounts:login' %}">Log in</a>
                 {% endif %}
