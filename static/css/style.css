@@ -805,3 +805,63 @@ body:has(.auth-screen) { background: #eef1f5; }
 .form-actions .btn-primary { min-width: 140px; }
 
 .form-footer { font-size: var(--t-sm); color: var(--c-muted); }
+
+/* ============================================================
+   Visitor pass
+   ============================================================ */
+
+.pass-screen { max-width: 560px; }
+
+.pass-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.pass-card-top {
+    padding: var(--s-5) var(--s-4);
+    text-align: center;
+    background: linear-gradient(180deg, #fbfcfd 0%, #ffffff 100%);
+    border-bottom: 1px dashed transparent;
+}
+
+.pass-card-label {
+    display: block;
+    font-size: var(--t-xs);
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--c-muted);
+    margin-bottom: var(--s-2);
+}
+
+.pass-card-code {
+    font-family: "Cascadia Mono", Consolas, "Courier New", monospace;
+    font-size: 2.125rem;
+    font-weight: 700;
+    letter-spacing: .14em;
+    color: var(--c-ink);
+    line-height: 1.1;
+    margin-bottom: var(--s-3);
+}
+
+/* A perforated edge, the way a real pass or ticket is separated */
+.pass-card-perforation {
+    height: 1px;
+    border-top: 1px dashed #cfd5de;
+    position: relative;
+}
+.pass-card-perforation::before,
+.pass-card-perforation::after {
+    content: "";
+    position: absolute;
+    top: -8px;
+    width: 15px; height: 15px;
+    border-radius: 50%;
+    background: var(--c-canvas);
+    border: 1px solid var(--c-line);
+}
+.pass-card-perforation::before { left: -8px; }
+.pass-card-perforation::after  { right: -8px; }
