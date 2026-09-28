@@ -769,3 +769,39 @@ body:has(.auth-screen) { background: #eef1f5; }
 }
 
 .resident-notice-wrap { max-width: 520px; }
+
+/* ============================================================
+   Forms ? add and edit screens
+   ============================================================ */
+
+.form-screen { max-width: 620px; }
+
+.form-body { padding: var(--s-5); }
+
+.form-row { margin-bottom: var(--s-4); }
+.form-row:last-of-type { margin-bottom: 0; }
+
+.form-row-plate .form-control {
+    font-family: "Cascadia Mono", Consolas, "Courier New", monospace;
+    font-size: var(--t-lg);
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+.form-row-plate .form-control::placeholder {
+    font-size: var(--t-base);
+    letter-spacing: normal;
+    font-weight: 400;
+    text-transform: none;
+}
+
+.form-actions {
+    display: flex;
+    gap: var(--s-2);
+    margin-top: var(--s-5);
+    padding-top: var(--s-4);
+    border-top: 1px solid var(--c-line-soft);
+}
+.form-actions .btn-primary { min-width: 140px; }
+
+.form-footer { font-size: var(--t-sm); color: var(--c-muted); }
