@@ -3,139 +3,170 @@
 {% block title %}My Account{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-10 col-lg-8">
-        <h1 class="h3 mb-3">My Account</h1>
-
-        {% if portal_state == "active" %}
-            <div class="card">
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span class="text-muted">Name</span>
-                        <span class="fw-semibold">{{ resident.full_name }}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span class="text-muted">Flat</span>
-                        <span>{{ resident.flat }}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span class="text-muted">Wing</span>
-                        <span>{{ resident.flat.wing.name }}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span class="text-muted">Resident Type</span>
-                        <span>{{ resident.get_resident_type_display }}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span class="text-muted">Phone</span>
-                        <span>{{ resident.phone }}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span class="text-muted">Email</span>
-                        <span>{{ resident.email|default:"-" }}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span class="text-muted">Status</span>
-                        <span><span class="badge text-bg-success">Active</span></span>
-                    </li>
-                </ul>
+{% if portal_state == "active" %}
+    <section class="resident-hero">
+        <div class="resident-avatar">{{ resident.full_name|slice:":1" }}</div>
+        <div class="resident-identity">
+            <h1 class="resident-name">{{ resident.full_name }}</h1>
+            <div class="resident-meta">
+                <span class="resident-flat">{{ resident.flat }}</span>
+                <span class="resident-dot"></span>
+                <span>{{ resident.get_resident_type_display }}</span>
+                <span class="resident-dot"></span>
+                <span class="badge text-bg-success">Active</span>
             </div>
-            <p class="small text-muted mt-3">If any of these details are wrong, please contact the society office.</p>
+        </div>
+    </section>
 
-            <h2 class="h5 mt-4 mb-3">My Vehicles</h2>
-            <div class="card">
-                {% if vehicles %}
-                    <div class="table-responsive">
-                        <table class="table align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Vehicle Number</th>
-                                    <th>Vehicle Type</th>
-                                    <th>Model</th>
-                                    <th>Colour</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for vehicle in vehicles %}
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <section class="resident-block">
+                <h2 class="resident-block-title">Contact details</h2>
+                <div class="card">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="text-muted">Name</span>
+                            <span class="fw-semibold">{{ resident.full_name }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="text-muted">Flat</span>
+                            <span>{{ resident.flat }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="text-muted">Wing</span>
+                            <span>{{ resident.flat.wing.name }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="text-muted">Resident Type</span>
+                            <span>{{ resident.get_resident_type_display }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="text-muted">Phone</span>
+                            <span>{{ resident.phone }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="text-muted">Email</span>
+                            <span>{{ resident.email|default:"-" }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="text-muted">Status</span>
+                            <span><span class="badge text-bg-success">Active</span></span>
+                        </li>
+                    </ul>
+                </div>
+                <p class="resident-note">If any of these details are wrong, please contact the society office.</p>
+            </section>
+        </div>
+
+        <div class="col-lg-7">
+            <section class="resident-block">
+                <h2 class="resident-block-title">My Vehicles <span class="resident-count">{{ vehicles|length }}</span></h2>
+                <div class="card">
+                    {% if vehicles %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
                                     <tr>
-                                        <td class="fw-semibold">{{ vehicle.vehicle_number }}</td>
-                                        <td>{{ vehicle.get_vehicle_type_display }}</td>
-                                        <td>{{ vehicle.model_name|default:"-" }}</td>
-                                        <td>{{ vehicle.colour|default:"-" }}</td>
-                                        <td>
-                                            {% if vehicle.is_active %}
-                                                <span class="badge text-bg-success">Active</span>
-                                            {% else %}
-                                                <span class="badge text-bg-secondary">Inactive</span>
-                                            {% endif %}
-                                        </td>
+                                        <th>Vehicle Number</th>
+                                        <th>Vehicle Type</th>
+                                        <th>Model</th>
+                                        <th>Colour</th>
+                                        <th>Status</th>
                                     </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <div class="card-body text-muted">You don't have any registered vehicles.</div>
-                {% endif %}
-            </div>
+                                </thead>
+                                <tbody>
+                                    {% for vehicle in vehicles %}
+                                        <tr>
+                                            <td><span class="plate plate-lg">{{ vehicle.vehicle_number }}</span></td>
+                                            <td>{{ vehicle.get_vehicle_type_display }}</td>
+                                            <td>{{ vehicle.model_name|default:"-" }}</td>
+                                            <td>{{ vehicle.colour|default:"-" }}</td>
+                                            <td>
+                                                {% if vehicle.is_active %}
+                                                    <span class="badge text-bg-success">Active</span>
+                                                {% else %}
+                                                    <span class="badge text-bg-secondary">Inactive</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="bi bi-car-front"></i>
+                            <div>You don't have any registered vehicles.</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
 
-            <h2 class="h5 mt-4 mb-3">My Visitors</h2>
-            <div class="card">
-                {% if visitors %}
-                    <div class="table-responsive">
-                        <table class="table align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Visitor Name</th>
-                                    <th>Expected Date</th>
-                                    <th>Vehicle Number</th>
-                                    <th>Status</th>
-                                    <th>Entry Time</th>
-                                    <th>Exit Time</th>
-                                    <th>Pass Code</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for visitor in visitors %}
+            <section class="resident-block">
+                <h2 class="resident-block-title">My Visitors <span class="resident-count">{{ visitors|length }}</span></h2>
+                <div class="card">
+                    {% if visitors %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
                                     <tr>
-                                        <td class="fw-semibold">{{ visitor.full_name }}</td>
-                                        <td>{{ visitor.expected_date|date:"d M Y" }}</td>
-                                        <td>{{ visitor.vehicle_number|default:"On foot" }}</td>
-                                        <td>
-                                            {% if visitor.status == "CHECKED_IN" %}
-                                                <span class="badge text-bg-success">{{ visitor.get_status_display }}</span>
-                                            {% elif visitor.status == "CHECKED_OUT" %}
-                                                <span class="badge text-bg-secondary">{{ visitor.get_status_display }}</span>
-                                            {% elif visitor.status == "CANCELLED" %}
-                                                <span class="badge text-bg-danger">{{ visitor.get_status_display }}</span>
-                                            {% elif visitor.status == "EXPIRED" %}
-                                                <span class="badge text-bg-warning">{{ visitor.get_status_display }}</span>
-                                            {% else %}
-                                                <span class="badge text-bg-primary">{{ visitor.get_status_display }}</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ visitor.entry_time|date:"d M Y, H:i"|default:"-" }}</td>
-                                        <td>{{ visitor.exit_time|date:"d M Y, H:i"|default:"-" }}</td>
-                                        <td>{{ visitor.pass_code }}</td>
+                                        <th>Visitor Name</th>
+                                        <th>Expected Date</th>
+                                        <th>Vehicle Number</th>
+                                        <th>Status</th>
+                                        <th>Entry Time</th>
+                                        <th>Exit Time</th>
+                                        <th>Pass Code</th>
                                     </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <div class="card-body text-muted">You don't have any visitors yet.</div>
-                {% endif %}
-            </div>
-        {% elif portal_state == "inactive" %}
+                                </thead>
+                                <tbody>
+                                    {% for visitor in visitors %}
+                                        <tr>
+                                            <td class="fw-semibold">{{ visitor.full_name }}</td>
+                                            <td class="text-nowrap">{{ visitor.expected_date|date:"d M Y" }}</td>
+                                            <td>{% if visitor.vehicle_number %}<span class="plate">{{ visitor.vehicle_number }}</span>{% else %}<span class="text-muted">On foot</span>{% endif %}</td>
+                                            <td>
+                                                {% if visitor.status == "CHECKED_IN" %}
+                                                    <span class="badge text-bg-success">{{ visitor.get_status_display }}</span>
+                                                {% elif visitor.status == "CHECKED_OUT" %}
+                                                    <span class="badge text-bg-secondary">{{ visitor.get_status_display }}</span>
+                                                {% elif visitor.status == "CANCELLED" %}
+                                                    <span class="badge text-bg-danger">{{ visitor.get_status_display }}</span>
+                                                {% elif visitor.status == "EXPIRED" %}
+                                                    <span class="badge text-bg-warning">{{ visitor.get_status_display }}</span>
+                                                {% else %}
+                                                    <span class="badge text-bg-primary">{{ visitor.get_status_display }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-nowrap">{{ visitor.entry_time|date:"d M Y, H:i"|default:"-" }}</td>
+                                            <td class="text-nowrap">{{ visitor.exit_time|date:"d M Y, H:i"|default:"-" }}</td>
+                                            <td><span class="pass-code">{{ visitor.pass_code }}</span></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="bi bi-person-badge"></i>
+                            <div>You don't have any visitors yet.</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
+        </div>
+    </div>
+{% else %}
+    <div class="resident-notice-wrap">
+        <h1 class="h3 mb-4">My Account</h1>
+        {% if portal_state == "inactive" %}
             <div class="alert alert-warning mb-0">Your resident record is inactive. Please contact the society office.</div>
         {% else %}
             <div class="alert alert-info mb-0">Your login isn't linked to a resident record yet. Please contact the society office.</div>
         {% endif %}
-
-        <p class="small text-muted mt-3 mb-0">
+        <p class="resident-note">
             Signed in as <strong>{{ user.get_username }}</strong>. Use the Log out button at the top right when you have finished.
         </p>
     </div>
-</div>
+{% endif %}
 {% endblock %}
