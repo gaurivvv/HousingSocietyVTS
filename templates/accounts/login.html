@@ -3,36 +3,43 @@
 {% block title %}Log in{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-4">
-        <h1 class="h3 mb-3">Log in</h1>
-
-        <div class="card">
-            <div class="card-body">
-                {% if form.non_field_errors %}
-                    <div class="alert alert-danger">
-                        {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
-                    </div>
-                {% endif %}
-
-                <form method="post" novalidate>
-                    {% csrf_token %}
-                    {% for field in form %}
-                        <div class="mb-3">
-                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                            {{ field }}
-                            {% for error in field.errors %}
-                                <div class="invalid-feedback d-block">{{ error }}</div>
-                            {% endfor %}
-                        </div>
-                    {% endfor %}
-                    <input type="hidden" name="next" value="{{ next }}">
-                    <button type="submit" class="btn btn-primary w-100">Log in</button>
-                </form>
+<div class="auth-screen">
+    <div class="auth-panel">
+        <div class="auth-brand">
+            <span class="auth-brand-mark"><i class="bi bi-buildings"></i></span>
+            <div>
+                <div class="auth-brand-name">Housing Society</div>
+                <div class="auth-brand-sub">Member &amp; Vehicle Tracking System</div>
             </div>
         </div>
 
-        <p class="small text-muted mt-3">Accounts are created by the society administrator.</p>
+        <h1 class="auth-title">Sign in</h1>
+        <p class="auth-subtitle">Use the account provided by your society administrator.</p>
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="mb-3">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            <input type="hidden" name="next" value="{{ next }}">
+            <button type="submit" class="btn btn-primary w-100 auth-submit">Log in</button>
+        </form>
+
+        <p class="auth-note">Accounts are created by the society administrator.</p>
     </div>
+
+    <p class="auth-footer">Housing Society Member &amp; Vehicle Tracking System</p>
 </div>
 {% endblock %}

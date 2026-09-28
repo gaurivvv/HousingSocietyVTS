@@ -596,3 +596,79 @@ a:hover { color: var(--c-primary-hover); text-decoration: underline; }
 @media (max-width: 1199.98px) {
     .gate-console { margin-bottom: var(--s-2); }
 }
+
+/* ============================================================
+   Authentication screen
+   ============================================================ */
+
+.auth-screen {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--s-5) var(--s-4);
+    margin: calc(var(--s-5) * -1) calc(var(--s-5) * -1) calc(var(--s-6) * -1);
+}
+
+/* Hide the app chrome on the sign-in screen */
+body:has(.auth-screen) .app-sidebar,
+body:has(.auth-screen) .app-topbar,
+body:has(.auth-screen) .app-footer { display: none; }
+body:has(.auth-screen) .app-content { padding: 0; }
+body:has(.auth-screen) { background: #eef1f5; }
+
+.auth-panel {
+    width: 100%;
+    max-width: 380px;
+    background: var(--c-surface);
+    border: 1px solid var(--c-line);
+    border-radius: 8px;
+    box-shadow: 0 6px 24px rgba(20,24,31,.07);
+    padding: var(--s-5);
+}
+
+.auth-brand {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    padding-bottom: var(--s-4);
+    margin-bottom: var(--s-5);
+    border-bottom: 1px solid var(--c-line-soft);
+}
+
+.auth-brand-mark {
+    width: 34px; height: 34px;
+    flex: 0 0 34px;
+    display: grid;
+    place-items: center;
+    border-radius: var(--radius-sm);
+    background: var(--c-primary);
+    color: #fff;
+    font-size: 1.05rem;
+}
+
+.auth-brand-name { font-size: var(--t-md); font-weight: 600; color: var(--c-ink); line-height: 1.2; }
+.auth-brand-sub  { font-size: var(--t-xs); color: var(--c-muted); line-height: 1.2; }
+
+.auth-title { font-size: var(--t-lg); font-weight: 600; color: var(--c-ink); margin: 0 0 var(--s-1); }
+.auth-subtitle { font-size: var(--t-sm); color: var(--c-muted); margin: 0 0 var(--s-5); }
+
+.auth-panel .form-control { padding: .5rem .7rem; }
+.auth-submit { padding: .5rem 1rem; font-weight: 600; margin-top: var(--s-2); }
+
+.auth-note {
+    font-size: var(--t-xs);
+    color: var(--c-faint);
+    text-align: center;
+    margin: var(--s-4) 0 0;
+    padding-top: var(--s-3);
+    border-top: 1px solid var(--c-line-soft);
+}
+
+.auth-footer {
+    font-size: var(--t-xs);
+    color: var(--c-faint);
+    margin: var(--s-5) 0 0;
+    text-align: center;
+}
