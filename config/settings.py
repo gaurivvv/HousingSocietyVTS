@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
     # Third-party
     'rest_framework',
+    'rest_framework.authtoken',
 
     # API layer
     'api',
@@ -156,7 +157,12 @@ LOGOUT_REDIRECT_URL = "accounts:login"
 # rather than receiving 401. Permissions are checked per view against the same
 # Django permissions the HTML views use.
 REST_FRAMEWORK = {
+    # Token first: a token is an explicit credential a client chose to send.
+    # A session cookie may be attached by a browser incidentally, so checking
+    # the deliberate one first gives a client the identity it intended.
+    # Browser pages are unaffected; this applies only to DRF views.
     "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [

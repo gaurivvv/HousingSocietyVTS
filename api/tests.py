@@ -54,16 +54,16 @@ class PingEndpointTests(ApiTestBase):
         self.url = reverse("api:ping")
 
     def test_anonymous_request_is_refused(self):
-        """Anonymous API requests get 403, not a redirect to the login page.
+        """Anonymous API requests get 401, not a redirect to the login page.
 
-        LoginRequiredMiddleware defers to the view, and DRF's IsAuthenticated
-        permission then refuses the request. Because SessionAuthentication has
-        no authenticate_header, DRF returns 403 rather than 401. This is the
-        right behaviour for an API: a machine-readable refusal rather than an
-        HTML login page.
+        TokenAuthentication supplies a WWW-Authenticate header, so DRF answers
+        an unauthenticated request with 401 Unauthorized rather than 403.
+        That distinction matters to a client: 401 means "authenticate first",
+        while 403 means "authenticated, but not permitted".
         """
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
+        self.assertIn("WWW-Authenticate", response)
 
     def test_admin_can_reach_the_endpoint(self):
         self.client.force_login(self.admin)
@@ -99,7 +99,8 @@ class VehicleListTests(ApiTestBase):
         self.url = reverse("api:vehicle-list")
 
     def test_anonymous_is_refused(self):
-        self.assertEqual(self.client.get(self.url).status_code, 403)
+        """401: not authenticated. See PingEndpointTests for why not 403."""
+        self.assertEqual(self.client.get(self.url).status_code, 401)
 
     def test_admin_can_list(self):
         self.client.force_login(self.admin)
@@ -148,7 +149,8 @@ class VehicleLookupTests(ApiTestBase):
         self.url = reverse("api:vehicle-lookup")
 
     def test_anonymous_is_refused(self):
-        self.assertEqual(self.client.get(self.url, {"plate": "MH99XY1111"}).status_code, 403)
+        """401: not authenticated. See PingEndpointTests for why not 403."""
+        self.assertEqual(self.client.get(self.url, {"plate": "MH99XY1111"}).status_code, 401)
 
     def test_resident_is_forbidden(self):
         self.client.force_login(self.resident_user)
@@ -205,9 +207,11 @@ class GateLogListTests(ApiTestBase):
         self.url = reverse("api:gate-log-list")
 
     def test_anonymous_is_refused(self):
-        self.assertEqual(self.client.get(self.url).status_code, 403)
+        """401: not authenticated. See PingEndpointTests for why not 403."""
+        self.assertEqual(self.client.get(self.url).status_code, 401)
 
     def test_resident_is_forbidden(self):
+        """403, not 401: the resident IS authenticated, just not permitted."""
         self.client.force_login(self.resident_user)
         self.assertEqual(self.client.get(self.url).status_code, 403)
 
@@ -265,9 +269,10 @@ class GateMovementTests(ApiTestBase):
         return self.client.post(self.url, payload, content_type="application/json")
 
     def test_anonymous_is_refused(self):
+        """401: not authenticated. See PingEndpointTests for why not 403."""
         response = self.post({"plate_number": "MH99XY1111",
                               "movement_type": "ENTRY", "source": "manual"})
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
     def test_resident_is_forbidden(self):
         self.client.force_login(self.resident_user)
