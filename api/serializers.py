@@ -49,6 +49,10 @@ class VehicleLogSerializer(serializers.ModelSerializer):
     movement_type_display = serializers.CharField(source="get_movement_type_display", read_only=True)
     category_display = serializers.CharField(source="get_category_display", read_only=True)
     owner_name = serializers.SerializerMethodField()
+    # Username only. No user id, email or staff flags are exposed.
+    recorded_by = serializers.CharField(
+        source="recorded_by.username", read_only=True, default=None
+    )
 
     class Meta:
         model = VehicleLog
@@ -61,6 +65,7 @@ class VehicleLogSerializer(serializers.ModelSerializer):
             "category",
             "category_display",
             "owner_name",
+            "recorded_by",
             "remarks",
         ]
         read_only_fields = fields

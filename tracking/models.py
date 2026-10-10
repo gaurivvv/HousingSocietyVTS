@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
@@ -50,6 +51,28 @@ class VehicleLog(models.Model):
     timestamp = models.DateTimeField(default=timezone.now, db_index=True)
     remarks = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # Audit: who recorded this movement.
+    #
+    # Nullable on purpose. Records created before this field existed, and
+    # records created by a management command or a script, have no signed-in
+    # user. NULL states that honestly rather than attributing the movement to
+    # someone who did not record it.
+    #
+    # PROTECT, not SET_NULL: deleting a user must not silently erase the
+    # attribution on the movements they recorded. The deletion is refused
+    # instead, which keeps the audit trail intact.
+    recorded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="gate_logs_recorded",
+        help_text=(
+            "The signed-in user who recorded this movement. Empty for records "
+            "created before this was tracked, or created by a command."
+        ),
+    )
 
     class Meta:
         ordering = ["-timestamp"]

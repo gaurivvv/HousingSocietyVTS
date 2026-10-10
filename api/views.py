@@ -167,7 +167,8 @@ DUPLICATE_WINDOW_SECONDS = 60
 # confidence and classification are never taken on a client's word.
 IGNORED_FIELDS = ["ocr_confidence", "confidence", "confirmed_by_guard",
                   "resident_id", "resident", "vehicle_id", "vehicle",
-                  "visitor_id", "visitor", "category", "timestamp"]
+                  "visitor_id", "visitor", "category", "timestamp",
+                  "recorded_by", "recorded_by_id", "user", "user_id"]
 
 
 @api_view(["POST"])
@@ -279,11 +280,15 @@ def gate_movement(request):
         )
 
     # 5. Create. The model classifies; the API does not.
+    # recorded_by comes from the authenticated session only. A recorded_by or
+    # user field in the request body is ignored, so a caller cannot attribute
+    # a movement to someone else.
     log = VehicleLog(
         plate_number=normalized,
         movement_type=movement,
         category=VehicleLog.Category.UNKNOWN,
         remarks=remarks,
+        recorded_by=request.user,
     )
     log.full_clean()
     log.save()

@@ -16,7 +16,11 @@ def gate(request):
     if request.method == "POST":
         form = GateEntryForm(request.POST)
         if form.is_valid():
-            log = form.save()
+            # The user is taken from the session, never from the posted data.
+            # GateEntryForm has no field for it, so a crafted POST cannot set it.
+            log = form.save(commit=False)
+            log.recorded_by = request.user
+            log.save()
             movement = log.get_movement_type_display()
 
             if log.vehicle:

@@ -7,7 +7,7 @@ from .models import VehicleLog
 
 @admin.register(VehicleLog)
 class VehicleLogAdmin(admin.ModelAdmin):
-    list_display = ["timestamp", "plate_number", "movement_type", "category", "vehicle", "visitor", "owner"]
+    list_display = ["timestamp", "plate_number", "movement_type", "category", "vehicle", "visitor", "owner", "recorded_by"]
     list_filter = ["movement_type", "category", "timestamp"]
     search_fields = [
         "plate_number",
@@ -22,9 +22,11 @@ class VehicleLogAdmin(admin.ModelAdmin):
     # The vehicle and visitor are linked automatically from the plate, so they are shown but not edited
     fields = [
         "plate_number", "movement_type", "category", "timestamp", "remarks",
-        "vehicle", "visitor", "created_at",
+        "vehicle", "visitor", "recorded_by", "created_at",
     ]
-    readonly_fields = ["vehicle", "visitor", "created_at"]
+    # recorded_by is read-only: it is set from the signed-in user in save_model(),
+    # so it cannot be typed in or changed to someone else.
+    readonly_fields = ["vehicle", "visitor", "recorded_by", "created_at"]
 
     @admin.display(description="Owner / host")
     def owner(self, obj):
@@ -45,6 +47,16 @@ class VehicleLogAdmin(admin.ModelAdmin):
         if normalized:
             queryset |= original_queryset.filter(plate_number__icontains=normalized)
         return queryset, may_have_duplicates
+
+    def save_model(self, request, obj, form, change):
+        """Record who created this log, from the session rather than the form.
+
+        Only set on creation. Editing an existing log does not rewrite who
+        originally recorded it, which would falsify the audit trail.
+        """
+        if not change and obj.recorded_by_id is None:
+            obj.recorded_by = request.user
+        super().save_model(request, obj, form, change)
 
     def has_delete_permission(self, request, obj=None):
         # Gate history is a security record: it is never deleted.
