@@ -47,6 +47,7 @@
                         <th>Movement</th>
                         <th>Category</th>
                         <th>Owner / Visitor</th>
+                        <th>Recorded by</th>
                         <th>Remarks</th>
                     </tr>
                 </thead>
@@ -71,7 +72,14 @@
                                     <span class="badge text-bg-warning">Unknown</span>
                                 {% endif %}
                             </td>
-                            <td>{% include "tracking/_owner.html" %}</td>
+                            <td class="text-nowrap">{% include "tracking/_owner.html" %}</td>
+                            <td class="text-nowrap">
+                                {% if log.recorded_by %}
+                                    {{ log.recorded_by.get_username }}
+                                {% else %}
+                                    <span class="text-muted text-nowrap" title="Recorded before this was tracked, or by a system command">Not recorded</span>
+                                {% endif %}
+                            </td>
                             <td>{{ log.remarks|default:"-" }}</td>
                         </tr>
                     {% endfor %}

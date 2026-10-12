@@ -64,8 +64,11 @@ def gate_history(request):
     # Bound only when the address has filter values, e.g. /gate/history/?plate=mh12
     filter_form = HistoryFilterForm(request.GET or None)
 
+    # recorded_by is joined here so the table does not fire one extra query
+    # per row for the username.
     logs = VehicleLog.objects.select_related(
-        "vehicle__resident__flat__wing", "visitor__resident", "visitor__flat__wing"
+        "vehicle__resident__flat__wing", "visitor__resident", "visitor__flat__wing",
+        "recorded_by",
     )
 
     if filter_form.is_valid():
