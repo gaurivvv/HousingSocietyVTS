@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Reports{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="h3 mb-0">Reports</h1>
+        <p class="text-muted small mb-0">Gate and visitor activity across a date range.</p>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body py-3">
+        <form method="get" class="row g-2 align-items-end" novalidate>
+            {% for field in form %}
+                <div class="col-sm-6 col-lg-3">
+                    <label for="{{ field.id_for_label }}" class="form-label small text-muted mb-1">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            <div class="col-sm-6 col-lg-auto d-flex gap-2">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-funnel me-1"></i>Apply</button>
+                <a href="{% url 'reports:reports' %}" class="btn btn-outline-secondary">Last 30 days</a>
+            </div>
+        </form>
+        <p class="text-muted small mb-0 mt-3">
+            Showing {{ start_date|date:"d M Y" }} to {{ end_date|date:"d M Y" }} ({{ day_count }} day{{ day_count|pluralize }}).
+        </p>
+    </div>
+</div>
+
+<h2 class="report-section-title">Gate movements</h2>
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="text-muted small">Entries</div>
+                <div class="stat-value">{{ gate.entries }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="text-muted small">Exits</div>
+                <div class="stat-value">{{ gate.exits }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="text-muted small">Registered</div>
+                <div class="stat-value">{{ gate.registered }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="text-muted small">Not recognised</div>
+                <div class="stat-value">{{ gate.unknown }}</div>
+                <div class="text-muted small mt-1">Not a judgement about the vehicle</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <span class="fw-semibold">Movements by day</span>
+        <span class="text-muted small">{{ gate.total }} in this range</span>
+    </div>
+    {% if gate_rows %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th class="text-end">Entries</th>
+                        <th class="text-end">Exits</th>
+                        <th class="text-end">Total</th>
+                        <th style="width: 40%">Activity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in gate_rows %}
+                        <tr>
+                            <td class="text-nowrap">{{ row.day|date:"d M Y" }}</td>
+                            <td class="text-end">{{ row.entries }}</td>
+                            <td class="text-end">{{ row.exits }}</td>
+                            <td class="text-end fw-semibold">{{ row.total }}</td>
+                            <td>
+                                <div class="report-bar" role="img" aria-label="{{ row.total }} movements">
+                                    <div class="report-bar-fill" style="width: {{ row.bar_width }}%"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="bi bi-bar-chart"></i>
+            <div>No gate movements in this date range.</div>
+        </div>
+    {% endif %}
+</div>
+
+<h2 class="report-section-title">Visitors</h2>
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="text-muted small">Registered</div>
+                <div class="stat-value">{{ visitors.registered }}</div>
+                <div class="text-muted small mt-1">Visits booked</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="text-muted small">Arrived</div>
+                <div class="stat-value">{{ visitors.arrived }}</div>
+                <div class="text-muted small mt-1">Actually checked in</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="text-muted small">Cancelled</div>
+                <div class="stat-value">{{ visitors.cancelled }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="text-muted small">Expired</div>
+                <div class="stat-value">{{ visitors.expired }}</div>
+                <div class="text-muted small mt-1">Expected but never arrived</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <span class="fw-semibold">Visitors by expected date</span>
+        <span class="text-muted small">{{ visitors.arrived }} of {{ visitors.registered }} arrived</span>
+    </div>
+    {% if visitor_rows %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Expected date</th>
+                        <th class="text-end">Registered</th>
+                        <th class="text-end">Arrived</th>
+                        <th class="text-end">Cancelled</th>
+                        <th class="text-end">Expired</th>
+                        <th style="width: 30%">Registered</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in visitor_rows %}
+                        <tr>
+                            <td class="text-nowrap">{{ row.expected_date|date:"d M Y" }}</td>
+                            <td class="text-end fw-semibold">{{ row.registered }}</td>
+                            <td class="text-end">{{ row.arrived }}</td>
+                            <td class="text-end">{{ row.cancelled }}</td>
+                            <td class="text-end">{{ row.expired }}</td>
+                            <td>
+                                <div class="report-bar" role="img" aria-label="{{ row.registered }} registered">
+                                    <div class="report-bar-fill report-bar-visitor" style="width: {{ row.bar_width }}%"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="bi bi-person-badge"></i>
+            <div>No visitors expected in this date range.</div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

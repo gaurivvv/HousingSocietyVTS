@@ -9,5 +9,6 @@ urlpatterns = [
     path("gate/", include("tracking.urls")),
     path("visitors/", include("visitors.urls")),
     path("api/v1/", include("api.urls")),
+    path("reports/", include("reports.urls")),
     path("", include("dashboard.urls")),
 ]

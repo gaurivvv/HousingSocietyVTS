@@ -865,3 +865,36 @@ body:has(.auth-screen) { background: #eef1f5; }
 }
 .pass-card-perforation::before { left: -8px; }
 .pass-card-perforation::after  { right: -8px; }
+
+/* ============================================================
+   Reports - CSS bars, no chart library
+   ============================================================ */
+
+/* Qualified with h2 to match the h1.h3 / h2.h5 convention above: the global
+   h1-h4 rule sets no font-size, so an unqualified h2 falls back to the
+   browser default of about 1.5em. */
+h2.report-section-title {
+    font-size: var(--t-xs);
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--c-muted);
+    margin: 0 0 var(--s-3);
+}
+
+.report-bar {
+    height: 8px;
+    background: #eef0f4;
+    border-radius: 4px;
+    overflow: hidden;
+    min-width: 60px;
+}
+
+.report-bar-fill {
+    height: 100%;
+    background: var(--c-primary);
+    border-radius: 4px;
+    transition: width .2s ease;
+}
+
+.report-bar-visitor { background: var(--c-info); }

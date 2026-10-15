@@ -61,6 +61,11 @@
                                 <a class="nav-link {% if request.resolver_match.view_name == 'tracking:history' %}active{% endif %}" href="{% url 'tracking:history' %}">Gate History</a>
                             </li>
                         {% endif %}
+                        {% if perms.residents.view_resident %}
+                            <li class="nav-item"><i class="bi bi-bar-chart"></i>
+                                <a class="nav-link {% if request.resolver_match.view_name == 'reports:reports' %}active{% endif %}" href="{% url 'reports:reports' %}">Reports</a>
+                            </li>
+                        {% endif %}
                         {% if perms.visitors.view_visitor %}
                             <li class="nav-item"><i class="bi bi-person-badge"></i>
                                 <a class="nav-link {% if request.resolver_match.app_name == 'visitors' %}active{% endif %}" href="{% url 'visitors:visitor_list' %}">Visitors</a>
