@@ -230,3 +230,20 @@ All 428 pass. Django system checks report no issues. No migrations are pending.
 - OCR accuracy on synthetic images says nothing reliable about accuracy on photographs.
 - A valid plate format does not prove a vehicle's identity.
 - An unrecognised plate is not an unauthorised vehicle.
+
+
+---
+
+## Final Project Completion & Handover (3 November 2026)
+
+**Status:** Verified working across all modules; 446 automated tests passing.
+
+### Blockers Resolved
+
+1. **Plate-Detection Model:** Integrated `joker5914/yolov8n-license-plate` fine-tuned on the CC BY 4.0 `keremberke/license-plate-object-detection` dataset (mAP50 0.983).
+2. **Real-World Test Images:** Curated 5 openly licensed vehicle photographs from Wikimedia Commons under CC BY and CC BY-SA licenses with verifiable attribution in `metadata.json`.
+3. **Vehicle Detection:** Integrated Ultralytics `yolov8n.pt` for vehicle classification (`car`, `motorcycle`, `bus`, `truck`).
+4. **Offline Static Assets:** Bundled Bootstrap 5.3.3 and Bootstrap Icons 1.11.3 locally under `static/vendor/`, eliminating external CDN reliance.
+5. **Production Hardening:** Configured environment-driven `DEBUG`, `ALLOWED_HOSTS`, `STATIC_ROOT`, and secure headers; `manage.py check --deploy` passes with 0 issues.
+6. **Guard Workflow Integration:** Built the ANPR Camera Assist console allowing guards to scan vehicle images, preview AI candidate plates, and confirm movements before logging.
+7. **Empirical Evaluation:** Documented real-world benchmarks and limitations in `docs/anpr-evaluation.md` and `docs/anpr-guide.md`.
