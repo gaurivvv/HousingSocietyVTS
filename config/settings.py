@@ -33,7 +33,11 @@ _allowed_hosts_env = os.getenv("DJANGO_ALLOWED_HOSTS", "")
 if _allowed_hosts_env.strip():
     ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts_env.split(",") if h.strip()]
 elif DEBUG:
-    ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+    ALLOWED_HOSTS = ["127.0.0.1", "localhost", "*"]
+
+if DEBUG and "*" not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.extend(["10.0.2.2", "192.168.1.109", "testserver"])
+    ALLOWED_HOSTS = list(dict.fromkeys(ALLOWED_HOSTS))
 else:
     ALLOWED_HOSTS = []
 
@@ -66,6 +70,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'config.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',

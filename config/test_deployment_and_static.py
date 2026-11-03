@@ -1,4 +1,4 @@
-"""Tests verifying offline static assets and production settings."""
+"""Tests verifying offline static assets, CORS, and production settings."""
 
 import os
 from pathlib import Path
@@ -40,3 +40,10 @@ class DeploymentConfigurationTests(SimpleTestCase):
         """Settings can configure DEBUG and ALLOWED_HOSTS dynamically."""
         self.assertIsInstance(settings.DEBUG, bool)
         self.assertIsInstance(settings.ALLOWED_HOSTS, list)
+
+    def test_cors_middleware_headers(self):
+        """OPTIONS preflight and API endpoints include permissive CORS headers."""
+        response = self.client.options("/api/v1/ping/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Access-Control-Allow-Origin"], "*")
+        self.assertIn("POST", response["Access-Control-Allow-Methods"])

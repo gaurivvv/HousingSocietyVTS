@@ -1,15 +1,16 @@
 """Serializers for the API.
 
-Owner contact details are deliberately absent. Guards can see a vehicle's owner
-name and flat on the HTML Vehicles page, but not phone or email, and the API
-must not become a way around that restriction. Only the fields listed here are
-ever returned.
+Owner contact details are restricted appropriately:
+- General endpoints (vehicles, gate logs) expose only the minimum context.
+- The resident portal endpoints expose the authenticated resident's own vehicles and visitors.
 """
 
 from rest_framework import serializers
 
 from tracking.models import VehicleLog
 from vehicles.models import Vehicle
+from visitors.models import Visitor
+from residents.models import Resident
 
 
 class VehicleSerializer(serializers.ModelSerializer):
@@ -34,22 +35,18 @@ class VehicleSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
+
 class VehicleLogSerializer(serializers.ModelSerializer):
     """A gate movement.
 
     The owner or visitor name is included so a guard can see who a movement
     relates to, but no contact details are exposed, consistent with the
     vehicle endpoints and with the HTML Gate History page.
-
-    'category' is a classification, not a verdict. UNKNOWN means the plate did
-    not match a registered vehicle or an expected visitor; it does not mean the
-    vehicle was unauthorised.
     """
 
     movement_type_display = serializers.CharField(source="get_movement_type_display", read_only=True)
     category_display = serializers.CharField(source="get_category_display", read_only=True)
     owner_name = serializers.SerializerMethodField()
-    # Username only. No user id, email or staff flags are exposed.
     recorded_by = serializers.CharField(
         source="recorded_by.username", read_only=True, default=None
     )
@@ -77,3 +74,56 @@ class VehicleLogSerializer(serializers.ModelSerializer):
         if log.visitor_id:
             return log.visitor.full_name
         return None
+
+
+class VisitorSerializer(serializers.ModelSerializer):
+    """A visitor record, including status, pass code, and visit timestamps."""
+
+    status_display = serializers.CharField(source="get_status_display", read_only=True)
+    flat_name = serializers.CharField(source="flat.__str__", read_only=True)
+    resident_name = serializers.CharField(source="resident.full_name", read_only=True)
+
+    class Meta:
+        model = Visitor
+        fields = [
+            "id",
+            "full_name",
+            "phone",
+            "vehicle_number",
+            "flat_name",
+            "resident_name",
+            "expected_date",
+            "entry_time",
+            "exit_time",
+            "status",
+            "status_display",
+            "pass_code",
+            "created_at",
+        ]
+        read_only_fields = ["id", "pass_code", "status", "entry_time", "exit_time", "created_at"]
+
+
+class ResidentPortalSerializer(serializers.ModelSerializer):
+    """The authenticated resident's self-service profile with vehicles and visitors."""
+
+    flat_name = serializers.CharField(source="flat.__str__", read_only=True)
+    wing_name = serializers.CharField(source="flat.wing.name", read_only=True)
+    resident_type_display = serializers.CharField(source="get_resident_type_display", read_only=True)
+    vehicles = VehicleSerializer(many=True, read_only=True)
+    visitors = VisitorSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Resident
+        fields = [
+            "id",
+            "full_name",
+            "resident_type",
+            "resident_type_display",
+            "phone",
+            "email",
+            "flat_name",
+            "wing_name",
+            "vehicles",
+            "visitors",
+        ]
+        read_only_fields = fields

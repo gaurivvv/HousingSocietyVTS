@@ -1,29 +1,40 @@
-"""API views.
-
-Every endpoint applies the same Django permission as its HTML equivalent, so
-the API cannot be used to reach data a role could not reach in the browser.
-"""
-
 from datetime import timedelta
 
+from django.contrib.auth import authenticate
+from django.core.exceptions import ValidationError
+from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
+from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, parser_classes, permission_classes
 from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+from residents.models import Resident
+from residents.utils import get_linked_resident
+from society.models import Flat, Wing
 from tracking.anpr_service import run_anpr
 from tracking.models import VehicleLog
+from tracking.utils import todays_counts, vehicles_inside
 from vehicles.models import Vehicle
 from vehicles.utils import normalize_plate
+from visitors.models import Visitor
 
 from .permissions import requires
-from .serializers import VehicleLogSerializer, VehicleSerializer
+from .serializers import (
+    ResidentPortalSerializer,
+    VehicleLogSerializer,
+    VehicleSerializer,
+    VisitorSerializer,
+)
 
 CanViewVehicle = requires("vehicles.view_vehicle")
 CanViewVehicleLog = requires("tracking.view_vehiclelog")
 CanAddVehicleLog = requires("tracking.add_vehiclelog")
-
+CanViewVisitor = requires("visitors.view_visitor")
+CanCheckInOutVisitor = requires("visitors.check_in_out_visitor")
 
 @api_view(["GET"])
 def ping(request):
@@ -367,3 +378,191 @@ def gate_movement(request):
          "log": VehicleLogSerializer(log).data},
         status=status.HTTP_201_CREATED,
     )
+
+
+# ----- Mobile App Endpoints -----
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def auth_login(request):
+    """Mobile login returning authentication token, role, and resident profile."""
+    username = str(request.data.get("username", "")).strip()
+    password = str(request.data.get("password", ""))
+
+    if not username or not password:
+        return Response(
+            {"error": "credentials_required", "detail": "Username and password are required."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    user = authenticate(request, username=username, password=password)
+    if user is None:
+        return Response(
+            {"error": "invalid_credentials", "detail": "Invalid username or password."},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    token, _ = Token.objects.get_or_create(user=user)
+
+    if user.is_staff or user.groups.filter(name="Society Admin").exists():
+        role = "Society Admin"
+    elif user.groups.filter(name="Guard").exists():
+        role = "Guard"
+    elif user.groups.filter(name="Resident").exists() or hasattr(user, "resident"):
+        role = "Resident"
+    else:
+        role = "User"
+
+    linked_resident = get_linked_resident(user)
+    resident_data = ResidentPortalSerializer(linked_resident).data if linked_resident else None
+
+    return Response({
+        "token": token.key,
+        "user_id": user.pk,
+        "username": user.get_username(),
+        "role": role,
+        "is_staff": user.is_staff,
+        "resident": resident_data,
+    })
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def resident_me(request):
+    """Retrieve the authenticated resident's profile, vehicles, and visitors."""
+    resident = get_linked_resident(request.user)
+    if resident is None:
+        return Response(
+            {"error": "no_linked_resident", "detail": "No resident record is linked to this account."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+    if not resident.is_active:
+        return Response(
+            {"error": "inactive_resident", "detail": "This resident account is inactive."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+    return Response(ResidentPortalSerializer(resident).data)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def resident_create_visitor(request):
+    """Pre-register a visitor from the resident mobile app."""
+    resident = get_linked_resident(request.user)
+    if resident is None or not resident.is_active:
+        return Response(
+            {"error": "forbidden", "detail": "Only active linked residents can pre-register visitors."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    full_name = str(request.data.get("full_name", "")).strip()
+    phone = str(request.data.get("phone", "")).strip()
+    vehicle_number = str(request.data.get("vehicle_number", "")).strip()
+    expected_date = request.data.get("expected_date") or timezone.localdate()
+
+    if not full_name or not phone:
+        return Response(
+            {"error": "missing_fields", "detail": "Full name and phone are required."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        visitor = Visitor(
+            full_name=full_name,
+            phone=phone,
+            vehicle_number=vehicle_number,
+            flat=resident.flat,
+            resident=resident,
+            expected_date=expected_date,
+        )
+        visitor.full_clean()
+        visitor.save()
+        return Response(VisitorSerializer(visitor).data, status=status.HTTP_201_CREATED)
+    except ValidationError as err:
+        return Response(
+            {"error": "validation_error", "detail": err.message_dict if hasattr(err, "message_dict") else str(err)},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+@api_view(["GET"])
+@permission_classes([CanViewVisitor])
+def visitor_list_guard(request):
+    """List expected and checked-in visitors for gate management."""
+    date_str = request.query_params.get("date")
+    if date_str:
+        try:
+            target_date = timezone.datetime.fromisoformat(date_str).date()
+        except ValueError:
+            target_date = timezone.localdate()
+    else:
+        target_date = timezone.localdate()
+
+    visitors = Visitor.objects.filter(expected_date=target_date).select_related("flat__wing", "resident")
+
+    status_filter = request.query_params.get("status")
+    if status_filter:
+        visitors = visitors.filter(status=status_filter.upper())
+
+    q = request.query_params.get("q", "").strip()
+    if q:
+        norm = normalize_plate(q)
+        q_cond = (
+            Q(full_name__icontains=q)
+            | Q(phone__icontains=q)
+            | Q(pass_code__icontains=q)
+        )
+        if norm:
+            q_cond |= Q(vehicle_number__icontains=norm)
+        visitors = visitors.filter(q_cond)
+
+    serializer = VisitorSerializer(visitors, many=True)
+    return Response({"count": visitors.count(), "results": serializer.data})
+
+
+@api_view(["POST"])
+@permission_classes([CanCheckInOutVisitor])
+def visitor_check_in(request, pk):
+    """Check in an expected visitor by ID."""
+    visitor = get_object_or_404(Visitor, pk=pk)
+    try:
+        visitor.check_in()
+        return Response(VisitorSerializer(visitor).data)
+    except ValidationError as err:
+        return Response({"error": "action_failed", "detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+@permission_classes([CanCheckInOutVisitor])
+def visitor_check_out(request, pk):
+    """Check out a checked-in visitor by ID."""
+    visitor = get_object_or_404(Visitor, pk=pk)
+    try:
+        visitor.check_out()
+        return Response(VisitorSerializer(visitor).data)
+    except ValidationError as err:
+        return Response({"error": "action_failed", "detail": str(err)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def dashboard_stats(request):
+    """Real-time society statistics for mobile dashboard overview."""
+    user = request.user
+    if not (user.has_perm("tracking.view_vehiclelog") or user.has_perm("residents.view_resident")):
+        return Response(
+            {"error": "forbidden", "detail": "You do not have permission to view society metrics."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    today = todays_counts()
+    return Response({
+        "wing_count": Wing.objects.count(),
+        "flat_count": Flat.objects.count(),
+        "active_resident_count": Resident.objects.filter(is_active=True).count(),
+        "active_vehicle_count": Vehicle.objects.filter(is_active=True).count(),
+        "inside_count": vehicles_inside().count(),
+        "todays_entries": today["entries"],
+        "todays_exits": today["exits"],
+        "todays_visitor_count": Visitor.objects.filter(expected_date=timezone.localdate()).count(),
+    })
