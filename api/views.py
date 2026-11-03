@@ -8,9 +8,11 @@ from datetime import timedelta
 
 from django.utils import timezone
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, parser_classes, permission_classes
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 
+from tracking.anpr_service import run_anpr
 from tracking.models import VehicleLog
 from vehicles.models import Vehicle
 from vehicles.utils import normalize_plate
@@ -158,6 +160,61 @@ def gate_log_list(request):
         "returned": len(logs),
         "results": VehicleLogSerializer(logs, many=True).data,
     })
+
+
+@api_view(["POST"])
+@permission_classes([CanAddVehicleLog])
+@parser_classes([MultiPartParser, FormParser])
+def gate_anpr_scan(request):
+    """Scan an image using the ANPR pipeline to suggest a candidate plate.
+
+    This produces an unverified candidate observation for operator review.
+    It does NOT record a VehicleLog entry.
+    """
+    if "image" not in request.FILES:
+        return Response(
+            {"error": "image_required", "detail": "An 'image' file upload is required."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    image_file = request.FILES["image"]
+    anpr_data = run_anpr(image_file)
+
+    if not anpr_data.get("success"):
+        return Response(
+            {
+                "success": False,
+                "error": "anpr_detection_failed",
+                "detail": anpr_data.get("error", "Vehicle or plate could not be resolved."),
+            },
+            status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        )
+
+    candidate = (anpr_data.get("candidate_plate") or "").strip()
+    return Response(
+        {
+            "success": True,
+            "candidate_plate": candidate,
+            "raw_text": anpr_data.get("raw_text", ""),
+            "vehicle_detected": anpr_data.get("vehicle_detected", False),
+            "vehicle_type": anpr_data.get("vehicle_type"),
+            "vehicle_confidence": anpr_data.get("vehicle_confidence"),
+            "plate_detected": anpr_data.get("plate_detected", False),
+            "plate_confidence": anpr_data.get("plate_confidence"),
+            "ocr_confidence": anpr_data.get("ocr_confidence"),
+            "format_status": anpr_data.get("format_status"),
+            "corrections": anpr_data.get("corrections", []),
+            "uncertain": anpr_data.get("uncertain", False),
+            "recorded": False,
+            "instruction": (
+                "This candidate plate has NOT been saved to the gate log. "
+                "The operator must verify the plate with the driver, then submit "
+                "the confirmed movement to /api/v1/gate/anpr-log/ with source='manual'."
+            ),
+        },
+        status=status.HTTP_200_OK,
+    )
+
 
 # A movement repeated within this window is treated as the same event, not a
 # second one. Cameras and impatient fingers both produce duplicates.

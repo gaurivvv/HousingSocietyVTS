@@ -11,5 +11,6 @@ urlpatterns = [
     path("vehicles/", views.vehicle_list, name="vehicle-list"),
     path("vehicles/lookup/", views.vehicle_lookup, name="vehicle-lookup"),
     path("gate/logs/", views.gate_log_list, name="gate-log-list"),
+    path("gate/anpr-scan/", views.gate_anpr_scan, name="gate-anpr-scan"),
     path("gate/anpr-log/", views.gate_movement, name="gate-movement"),
 ]

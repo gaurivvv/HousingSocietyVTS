@@ -1,10 +1,15 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import permission_required
 from django.core.paginator import Paginator
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
+from django.utils import timezone
 
+from vehicles.models import Vehicle
 from vehicles.utils import normalize_plate
+from visitors.models import Visitor
 
+from .anpr_service import run_anpr
 from .forms import GateEntryForm, HistoryFilterForm
 from .models import VehicleLog
 from .utils import todays_counts, vehicles_inside
@@ -45,7 +50,14 @@ def gate(request):
 
             return redirect("tracking:gate")
     else:
-        form = GateEntryForm()
+        prefill_plate = request.GET.get("prefill", "").strip()
+        if prefill_plate:
+            form = GateEntryForm(initial={
+                "plate_number": prefill_plate,
+                "remarks": "AI-assisted (Verified by Guard)",
+            })
+        else:
+            form = GateEntryForm()
 
     context = {
         "form": form,
@@ -56,6 +68,75 @@ def gate(request):
         "today": todays_counts(),
     }
     return render(request, "tracking/gate.html", context)
+
+
+@permission_required("tracking.add_vehiclelog", raise_exception=True)
+def gate_anpr_scan(request):
+    """Analyze an uploaded vehicle image using the ANPR pipeline.
+
+    Returns candidate detection results for guard verification.
+    This view NEVER records a movement directly to the database.
+    """
+    if request.method != "POST" or "image" not in request.FILES:
+        return JsonResponse({"success": False, "error": "An image file is required."}, status=400)
+
+    uploaded_image = request.FILES["image"]
+    anpr_result = run_anpr(uploaded_image)
+
+    if not anpr_result.get("success"):
+        return JsonResponse({
+            "success": False,
+            "error": anpr_result.get("error", "No plate or vehicle recognized in image."),
+        }, status=400)
+
+    candidate_plate = (anpr_result.get("candidate_plate") or "").strip()
+    match_type = "unknown"
+    owner_info = None
+
+    if candidate_plate:
+        normalized = normalize_plate(candidate_plate)
+        # Check registered resident vehicle
+        vehicle = (
+            Vehicle.objects
+            .select_related("resident__flat__wing")
+            .filter(vehicle_number=normalized)
+            .first()
+        )
+        if vehicle:
+            match_type = "registered"
+            owner_info = f"{vehicle.resident.full_name} ({vehicle.resident.flat})"
+        else:
+            # Check expected visitor today
+            today = timezone.localdate()
+            visitor = (
+                Visitor.objects
+                .select_related("resident__flat__wing")
+                .filter(vehicle_number=normalized, expected_date=today)
+                .first()
+            )
+            if visitor:
+                match_type = "visitor"
+                owner_info = f"Visitor: {visitor.full_name} visiting {visitor.resident.full_name} ({visitor.flat})"
+
+    return JsonResponse({
+        "success": True,
+        "candidate_plate": candidate_plate,
+        "raw_text": anpr_result.get("raw_text", ""),
+        "vehicle_detected": anpr_result.get("vehicle_detected", False),
+        "vehicle_type": anpr_result.get("vehicle_type"),
+        "vehicle_confidence": anpr_result.get("vehicle_confidence"),
+        "plate_detected": anpr_result.get("plate_detected", False),
+        "plate_confidence": anpr_result.get("plate_confidence"),
+        "ocr_confidence": anpr_result.get("ocr_confidence"),
+        "match_type": match_type,
+        "owner_info": owner_info,
+        "corrections": anpr_result.get("corrections", []),
+        "uncertain": anpr_result.get("uncertain", False),
+        "notice": (
+            "ANPR reading is an AI recommendation. The guard must verify "
+            "the physical plate with the driver before recording."
+        ),
+    })
 
 
 @permission_required("tracking.view_vehiclelog", raise_exception=True)

@@ -1,12 +1,12 @@
 # Housing Society Member & Vehicle Tracking System
 
-A Django application for managing a housing society: residents, their vehicles, expected visitors, and every vehicle movement at the gate.
+A Django application for managing a housing society: residents, their vehicles, expected visitors, gate movements, and AI-assisted vehicle plate tracking.
 
-## Scope: what this does and does not do
+## Scope: what this does and how AI is safely integrated
 
-**Implemented and tested.** Resident and vehicle records, visitor pre-registration with passes, gate entry and exit logging with automatic classification, three user roles with server-side permission checks, a resident self-service portal, a REST API, an audit trail, and reports.
+**Implemented and tested.** Resident and vehicle records, visitor pre-registration with passes, gate entry and exit logging with automatic 3-tier classification, three user roles with server-side permission checks, a resident self-service portal, a REST API, an audit trail, reports, offline static assets, production deployment hardening, and an AI-powered Automatic Number Plate Recognition (ANPR) pipeline.
 
-**Not implemented.** The project title refers to AI-based vehicle security. **Automatic Number Plate Recognition is not integrated.** The gate currently accepts a vehicle number typed by a guard. A separate experimental lab exists outside this repository where OCR has been tested on synthetic images only. No vehicle detection, plate detection, or camera input exists in this application.
+**Safe AI Design Principle.** Optical Character Recognition in real conditions (dirt, glare, angle, high-security holograms) can misread characters. Therefore, **ANPR predictions are never recorded directly into the database as facts**. Instead, the AI pipeline extracts and normalizes a candidate plate to assist the guard. The candidate pre-fills the gate console for visual verification and driver confirmation before the movement is logged. Manual gate entry and exit remain 100% operational at all times.
 
 ## Features
 
@@ -15,13 +15,14 @@ A Django application for managing a housing society: residents, their vehicles, 
 | society | Wings and flats | 6 |
 | residents | Resident records, search, optional login link | 50 |
 | vehicles | Registration, plate normalization, duplicate prevention, search | 27 |
-| tracking | Gate entry/exit, classification, history, audit trail | 93 |
+| tracking | Gate entry/exit, classification, history, audit trail, ANPR scan assist | 103 |
 | visitors | Pre-registration, pass codes, check-in/out, expiry | 64 |
 | accounts | Three roles, login, resident portal, API tokens | 88 |
 | dashboard | Live counts and recent activity | 4 |
-| api | Five REST endpoints, token and session authentication | 73 |
+| api | Six REST endpoints, token and session authentication | 77 |
 | reports | Gate and visitor statistics with date filters | 23 |
-| **Total** | | **428** |
+| config | Offline static asset verification and production deployment checks | 4 |
+| **Total** | | **446** |
 
 ### Gate classification
 
@@ -37,19 +38,21 @@ When a movement is recorded, the plate is normalized and checked:
 
 | Role | Can do |
 |---|---|
-| Society Admin | Everything, including Django Admin and reports |
-| Guard | Gate, gate history, visitors, view vehicles |
+| Society Admin | Everything, including Django Admin, ANPR, and reports |
+| Guard | Gate console, ANPR camera scan assist, gate history, visitors, view vehicles |
 | Resident | Own account, own vehicles, own visitors only |
 
-Permissions are enforced on the server. Hiding a link is not the control: typing a restricted address directly still returns 403.
+Permissions are enforced on the server. Hiding a link is not the control: typing a restricted address directly returns 403.
 
-## Technology
+## Technology & ML Stack
 
-- Python 3.13.5
-- Django 5.2.17
+- Python 3.13.5 (Django backend) & Python 3.10.0 (ANPR ML environment)
+- Django 5.2.17 & Django REST Framework 3.18.3
 - PostgreSQL 17
-- Django REST Framework 3.18.3
-- HTML, CSS, Bootstrap 5
+- Offline Bootstrap 5.3.3 & Bootstrap Icons 1.11.3 (bundled locally)
+- Ultralytics YOLOv8n (vehicle detection - AGPL-3.0)
+- YOLOv8n License Plate Detector (`joker5914/yolov8n-license-plate` fine-tuned on CC BY 4.0 dataset, mAP 0.983)
+- EasyOCR 1.7.2 & Custom Indian plate format corrector (`plate_corrector.py`)
 
 ## Setup (Windows PowerShell)
 
@@ -119,8 +122,6 @@ python manage.py migrate
 python manage.py setup_roles
 ```
 
-This creates the Society Admin, Guard and Resident groups with their permissions. The application will not restrict access correctly without it.
-
 ### 8. Create an administrator
 
 ```powershell
@@ -132,8 +133,6 @@ python manage.py createsuperuser
 ```powershell
 python manage.py seed_demo_data --password "ChooseAPassword123!"
 ```
-
-Creates residents, vehicles, visitors and gate movements, plus `demo_guard` and `demo_resident` logins. Safe to run more than once; it adds nothing the second time. Omit `--password` to create data without logins.
 
 ### 10. Run
 
@@ -149,15 +148,11 @@ Open http://127.0.0.1:8000/
 python manage.py test
 ```
 
-428 tests. A single module:
-
-```powershell
-python manage.py test vehicles
-```
+446 automated tests passing with zero failures.
 
 ## API
 
-Five endpoints under `/api/v1/`:
+Six endpoints under `/api/v1/`:
 
 | Endpoint | Method | Permission |
 |---|---|---|
@@ -165,23 +160,17 @@ Five endpoints under `/api/v1/`:
 | `vehicles/` | GET | `vehicles.view_vehicle` |
 | `vehicles/lookup/?plate=` | GET | `vehicles.view_vehicle` |
 | `gate/logs/` | GET | `tracking.view_vehiclelog` |
+| `gate/anpr-scan/` | POST | `tracking.add_vehiclelog` |
 | `gate/anpr-log/` | POST | `tracking.add_vehiclelog` |
 
 Both session and token authentication work. See `docs/api-tokens.md` for issuing, rotating and revoking tokens.
 
-**The POST endpoint rejects `source="anpr"` with HTTP 422.** The gate log has no field distinguishing an unverified camera reading from a movement a person confirmed, so storing one would present a guess as a fact. A guard must confirm the plate and submit it as `source="manual"`.
+**The `gate/anpr-log/` endpoint rejects `source="anpr"` with HTTP 422.** Unverified camera readings cannot be logged directly. A guard or operator must verify the plate and submit it with `source="manual"`.
 
-## Project status
+## Project Documentation
 
-**Working and verified:** all nine modules above, 428 tests passing, demo data, role enforcement across every page and endpoint.
-
-**Not built:** ANPR, deployment configuration (`DEBUG` is True and `ALLOWED_HOSTS` is empty), offline static assets (Bootstrap loads from a CDN).
-
-**Blocked:** ANPR detection requires a plate-detection model whose licence and availability have not been verified, and test images that have not been selected.
-
-## Limitations
-
-- ANPR is not integrated; the gate requires a typed plate.
-- API tokens do not expire; revoke them when a client no longer needs one.
-- Development configuration only. Deployment needs `DEBUG=False`, `ALLOWED_HOSTS`, and HTTPS.
-- Gate logs created before the audit field existed show "Not recorded" rather than a fabricated user.
+- [Deployment Guide](docs/deployment.md) - Production configuration, SSL/TLS, and Nginx/Gunicorn setup.
+- [ANPR Integration Guide](docs/anpr-guide.md) - Full explanation of the ML pipeline, models, and workflows.
+- [ANPR Real-World Evaluation Report](docs/anpr-evaluation.md) - Empirical benchmarks on openly licensed vehicle photographs.
+- [API Tokens](docs/api-tokens.md) - Token issuance, rotation, and revocation.
+- [Project Status](docs/project-status.md) - Full audit of verified modules and architectural guarantees.

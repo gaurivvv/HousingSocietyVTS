@@ -27,9 +27,15 @@ load_dotenv(BASE_DIR / ".env")
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DJANGO_DEBUG", "False").strip().lower() in ("true", "1", "t", "yes")
 
-ALLOWED_HOSTS = []
+_allowed_hosts_env = os.getenv("DJANGO_ALLOWED_HOSTS", "")
+if _allowed_hosts_env.strip():
+    ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts_env.split(",") if h.strip()]
+elif DEBUG:
+    ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+else:
+    ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -140,6 +146,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -175,3 +182,20 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 50,
 }
+
+# Production security hardening (applied when DEBUG is False)
+if not DEBUG:
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = "DENY"
+    SESSION_COOKIE_SECURE = os.getenv("DJANGO_SESSION_COOKIE_SECURE", "True").strip().lower() in ("true", "1", "yes")
+    CSRF_COOKIE_SECURE = os.getenv("DJANGO_CSRF_COOKIE_SECURE", "True").strip().lower() in ("true", "1", "yes")
+    if os.getenv("DJANGO_SECURE_SSL_REDIRECT", "False").strip().lower() in ("true", "1", "yes"):
+        SECURE_SSL_REDIRECT = True
+    _hsts_seconds = int(os.getenv("DJANGO_SECURE_HSTS_SECONDS", "0"))
+    if _hsts_seconds > 0:
+        SECURE_HSTS_SECONDS = _hsts_seconds
+        SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+        SECURE_HSTS_PRELOAD = True
+
+

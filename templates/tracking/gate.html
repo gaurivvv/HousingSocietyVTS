@@ -19,6 +19,49 @@
                 <span class="gate-console-step">Plate &rarr; Direction &rarr; Record</span>
             </header>
 
+            <div class="p-3 pb-0">
+                <div class="card border-primary-subtle shadow-sm mb-3">
+                    <div class="card-header bg-primary-subtle d-flex justify-content-between align-items-center py-2">
+                        <span class="fw-semibold text-primary"><i class="bi bi-camera me-1"></i>ANPR Camera Assist</span>
+                        <span class="badge text-bg-primary">AI Detection</span>
+                    </div>
+                    <div class="card-body p-3">
+                        <form id="anprScanForm" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="input-group input-group-sm mb-2">
+                                <input type="file" class="form-control" id="anprImageInput" name="image" accept="image/*" required>
+                                <button class="btn btn-primary" type="submit" id="anprScanBtn">
+                                    <span id="anprBtnSpinner" class="spinner-border spinner-border-sm d-none me-1" role="status"></span>
+                                    <i class="bi bi-cpu me-1" id="anprBtnIcon"></i>Scan Plate
+                                </button>
+                            </div>
+                            <div class="form-text small text-muted">Upload a vehicle photograph from the gate camera to detect the plate.</div>
+                        </form>
+
+                        <div id="anprResultArea" class="d-none mt-3 p-3 rounded bg-light border">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span class="small fw-semibold text-muted text-uppercase">AI Candidate Plate</span>
+                                <span id="anprConfidenceBadge" class="badge text-bg-secondary"></span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                                <span class="h4 mb-0 font-monospace text-primary fw-bold" id="anprCandidatePlate"></span>
+                                <span id="anprVehicleBadge" class="badge text-bg-light border"></span>
+                                <span id="anprMatchBadge" class="badge"></span>
+                            </div>
+                            <div id="anprMatchDetails" class="small text-muted mb-2"></div>
+                            <div class="alert alert-warning py-2 px-3 mb-2 small d-flex align-items-center">
+                                <i class="bi bi-shield-exclamation me-2 fs-5"></i>
+                                <div><strong>Guard Verification Required:</strong> Compare characters with the vehicle's plate before confirming.</div>
+                            </div>
+                            <button type="button" class="btn btn-success btn-sm w-100" id="anprApplyBtn">
+                                <i class="bi bi-check-lg me-1"></i>Use Candidate in Gate Form
+                            </button>
+                        </div>
+                        <div id="anprErrorArea" class="d-none alert alert-danger py-2 px-3 mt-2 small"></div>
+                    </div>
+                </div>
+            </div>
+
             <form method="post" novalidate class="gate-console-body">
                 {% csrf_token %}
 
@@ -187,4 +230,113 @@
         </div>
     {% endif %}
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const anprForm = document.getElementById('anprScanForm');
+    if (!anprForm) return;
+
+    const fileInput = document.getElementById('anprImageInput');
+    const scanBtn = document.getElementById('anprScanBtn');
+    const spinner = document.getElementById('anprBtnSpinner');
+    const icon = document.getElementById('anprBtnIcon');
+    const resultArea = document.getElementById('anprResultArea');
+    const errorArea = document.getElementById('anprErrorArea');
+    const candidatePlateEl = document.getElementById('anprCandidatePlate');
+    const vehicleBadge = document.getElementById('anprVehicleBadge');
+    const confidenceBadge = document.getElementById('anprConfidenceBadge');
+    const matchBadge = document.getElementById('anprMatchBadge');
+    const matchDetails = document.getElementById('anprMatchDetails');
+    const applyBtn = document.getElementById('anprApplyBtn');
+
+    const plateInput = document.getElementById('id_plate_number');
+    const remarksInput = document.getElementById('id_remarks');
+
+    anprForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        if (!fileInput.files || fileInput.files.length === 0) return;
+
+        errorArea.classList.add('d-none');
+        resultArea.classList.add('d-none');
+        scanBtn.disabled = true;
+        spinner.classList.remove('d-none');
+        icon.classList.add('d-none');
+
+        const formData = new FormData(anprForm);
+
+        try {
+            const resp = await fetch('{% url "tracking:anpr_scan" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            const data = await resp.json();
+
+            if (!resp.ok || !data.success) {
+                errorArea.textContent = data.error || 'Failed to resolve number plate. Please enter plate manually.';
+                errorArea.classList.remove('d-none');
+                return;
+            }
+
+            candidatePlateEl.textContent = data.candidate_plate || data.raw_text || 'UNKNOWN';
+
+            if (data.vehicle_type) {
+                vehicleBadge.textContent = data.vehicle_type.toUpperCase();
+                vehicleBadge.classList.remove('d-none');
+            } else {
+                vehicleBadge.classList.add('d-none');
+            }
+
+            const plateConf = data.plate_confidence ? Math.round(data.plate_confidence * 100) : 0;
+            const ocrConf = data.ocr_confidence ? Math.round(data.ocr_confidence * 100) : 0;
+            confidenceBadge.textContent = `Conf: Plate ${plateConf}% | OCR ${ocrConf}%`;
+
+            if (data.match_type === 'registered') {
+                matchBadge.textContent = 'Registered Resident';
+                matchBadge.className = 'badge text-bg-success';
+                matchDetails.textContent = data.owner_info || '';
+            } else if (data.match_type === 'visitor') {
+                matchBadge.textContent = 'Expected Visitor';
+                matchBadge.className = 'badge text-bg-info';
+                matchDetails.textContent = data.owner_info || '';
+            } else {
+                matchBadge.textContent = 'Unknown / Unregistered';
+                matchBadge.className = 'badge text-bg-warning';
+                matchDetails.textContent = 'Not registered to any resident or expected visitor.';
+            }
+
+            resultArea.classList.remove('d-none');
+
+            // Auto-fill into form immediately for guard convenience
+            if (plateInput && data.candidate_plate) {
+                plateInput.value = data.candidate_plate;
+                if (remarksInput && !remarksInput.value) {
+                    remarksInput.value = 'AI-assisted (Verified by Guard)';
+                }
+            }
+        } catch (err) {
+            errorArea.textContent = 'Network or server error during ANPR processing: ' + err.message;
+            errorArea.classList.remove('d-none');
+        } finally {
+            scanBtn.disabled = false;
+            spinner.classList.add('d-none');
+            icon.classList.remove('d-none');
+        }
+    });
+
+    if (applyBtn) {
+        applyBtn.addEventListener('click', function() {
+            if (plateInput && candidatePlateEl.textContent) {
+                plateInput.value = candidatePlateEl.textContent.trim();
+                plateInput.focus();
+                if (remarksInput && !remarksInput.value) {
+                    remarksInput.value = 'AI-assisted (Verified by Guard)';
+                }
+            }
+        });
+    }
+});
+</script>
 {% endblock %}
