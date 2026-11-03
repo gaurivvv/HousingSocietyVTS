@@ -6,11 +6,11 @@ A plain, transparent account of what works, empirical test results, and producti
 
 ## Summary
 
-The Housing Society Member & Vehicle Tracking System is complete and verified: ten test suites, 446 automated tests passing, role-based security, offline static assets, production deployment hardening, and an integrated AI-assisted Automatic Number Plate Recognition (ANPR) pipeline with a safe human confirmation workflow.
+The Housing Society Member & Vehicle Tracking System is fully complete, hardened, and expanded with a cross-platform mobile application: eleven test suites, 454 automated tests passing, role-based security, offline static assets, production deployment hardening, an integrated AI-assisted Automatic Number Plate Recognition (ANPR) pipeline, and a React Native mobile application for Guards, Residents, and Admins.
 
 ## Verified Working
 
-Confirmed by automated test runs, empirical ML evaluations, and browser execution.
+Confirmed by automated test runs, empirical ML evaluations, browser execution, and mobile API test suites.
 
 | Area | Evidence |
 |---|---|
@@ -21,10 +21,10 @@ Confirmed by automated test runs, empirical ML evaluations, and browser executio
 | Visitors: lifecycle, pass codes, expiry | 64 tests |
 | Roles and permissions | 88 tests |
 | Dashboard | 4 tests |
-| REST API: 6 endpoints | 77 tests |
+| REST API: 13 endpoints (Vehicles, Gate, Visitors, Residents, Stats) | 84 tests |
 | Reports: analytics & date filters | 23 tests |
-| Config: Offline static assets & deployment checks | 4 tests |
-| **Total** | **446 passing (100% OK)** |
+| Config: Offline static assets, CORS, & deployment checks | 5 tests |
+| **Total** | **454 passing (100% OK)** |
 
 ### Security Properties, Verified by Tests
 - Every page requires an active login, enforced by `LoginRequiredMiddleware`.
@@ -35,6 +35,28 @@ Confirmed by automated test runs, empirical ML evaluations, and browser executio
 - `on_delete=models.PROTECT` prevents deleting any user whose gate movements are recorded.
 - API tokens authenticate callers without bypassing role-based permissions.
 - Direct submission of unverified `source="anpr"` movements is rejected with HTTP 422.
+- Permissive CORS middleware in development handles preflight OPTIONS for mobile devices.
+
+---
+
+## Cross-Platform Mobile Application (HousingSocietyApp)
+
+A full-featured mobile app built with **React Native** and **Expo SDK 58** (`C:\Users\gauri\Projects\HousingSocietyApp`):
+
+1. **Gate Guard Operations:**
+   - Real-time ANPR vehicle camera capture and image gallery picker.
+   - Live AI plate candidate review card with human-in-the-loop validation.
+   - Quick visitor pass check-in and check-out.
+2. **Resident Portal:**
+   - Profile overview and registered vehicles display (`MH12KL4567` Hyundai i20).
+   - Pre-registration of guests with instant `VP-XXXXX` digital pass generation.
+   - Live guest arrival and departure tracking.
+3. **Admin Telemetry:**
+   - Society overview cards: vehicles inside, total registered vehicles, active residents, and today's movements.
+   - Real-time gate movement audit feed.
+4. **Convenience Features:**
+   - One-tap demo logins for Guard (`demo_guard`), Resident (`demo_resident`), and Admin (`gauri`).
+   - Dynamic server URL configuration supporting local Wi-Fi LAN (`http://192.168.1.109:8000/api/v1`).
 
 ---
 
